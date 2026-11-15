@@ -36,6 +36,9 @@ Voir `plan.md` (arborescence détaillée et rôle de chaque fichier).
 ## Problèmes rencontrés et solutions
 - Réseau désactivé dans l'environnement de développement : `npm install` impossible, donc **le jeu n'a pas été lancé dans un navigateur**. Vérifications faites : syntaxe de tous les fichiers (`node --check`) et test de collision headless de physics.js (chute et mur OK).
 - Hitbox d'attaque : convention y = bas de la boîte (comme aabb), corrigée après revue.
+- **Écran noir sur GitHub Pages** (déployé depuis la racine, sans build) : `import 'three'` et le chemin absolu `/src/main.js` ne se résolvaient pas. Solution : `importmap` vers three@0.170.0 sur jsdelivr + `./src/main.js` relatif dans index.html. Les erreurs JS s'affichent maintenant à l'écran (bandeau rouge en bas).
+- **Orientation paysage** : écran d'accueil « JOUER » qui passe en plein écran et verrouille le paysage (`screen.orientation.lock`), et message « Tourne ton téléphone » en mode portrait. Le jeu reste figé tant que JOUER n'est pas touché.
+- Pour l'APK : après `npm run cap:add`, mettre `android:screenOrientation="sensorLandscape"` sur l'activité dans `android/app/src/main/AndroidManifest.xml` (le dossier android/ est ignoré par git).
 
 ## Dépendances installées
 Aucune installée localement (voir package.json : three, gsap, howler, @capacitor/core, @capacitor/android, @capacitor/cli, vite).
