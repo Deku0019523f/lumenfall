@@ -72,6 +72,13 @@ function frame(now) {
   const dt = Math.min((now - last) / 1000, 1 / 30); // plafonné pour éviter les sauts après un lag
   last = now;
 
+  // Le jeu reste figé tant que le joueur n'a pas touché "JOUER"
+  if (document.body.dataset.started !== '1') {
+    renderer.render(scene, camera.cam);
+    requestAnimationFrame(frame);
+    return;
+  }
+
   game.player.update(input, game, dt);
   for (const e of game.enemies) e.update(game, dt);
   game.enemies = game.enemies.filter((e) => !e.dead);
