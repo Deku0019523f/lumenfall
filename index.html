@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0a14" />
+  <title>Lumenfall</title>
+  <style>
+    html, body { margin: 0; height: 100%; background: #0b0a14; overflow: hidden;
+      touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+      font-family: system-ui, sans-serif; color: #e8e4ff; }
+    #game { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+    #hud { position: fixed; inset: 0; pointer-events: none; }
+    #hud > * { pointer-events: auto; }
+    .bar { position: absolute; top: calc(10px + env(safe-area-inset-top)); left: 14px; display: flex; gap: 6px; align-items: center; pointer-events: none; }
+    .mask { width: 18px; height: 22px; border-radius: 50% 50% 45% 45%; background: #e8e4ff; box-shadow: 0 0 8px #9b8cff; }
+    .mask.empty { background: transparent; border: 2px solid #5b5580; box-shadow: none; }
+    #energy { position: absolute; top: calc(40px + env(safe-area-inset-top)); left: 14px; width: 120px; height: 8px; background: #1d1a33; border-radius: 4px; overflow: hidden; pointer-events: none; }
+    #energyFill { height: 100%; width: 100%; background: linear-gradient(90deg, #6ee7ff, #9b8cff); transition: width .1s; }
+    #menuBtn { position: absolute; top: calc(10px + env(safe-area-inset-top)); right: 14px; width: 44px; height: 44px; border-radius: 50%; border: 2px solid #5b5580; background: rgba(20,18,40,.6); color: #e8e4ff; font-size: 18px; }
+    #stick { position: absolute; left: 24px; bottom: calc(24px + env(safe-area-inset-bottom)); width: 140px; height: 140px; border-radius: 50%; background: rgba(155,140,255,.12); border: 2px solid rgba(155,140,255,.35); }
+    #knob { position: absolute; left: 50%; top: 50%; width: 56px; height: 56px; margin: -28px 0 0 -28px; border-radius: 50%; background: rgba(155,140,255,.55); }
+    .btn { position: absolute; width: 68px; height: 68px; border-radius: 50%; border: 2px solid rgba(232,228,255,.5); background: rgba(20,18,40,.55); color: #e8e4ff; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+    .btn.on { background: rgba(155,140,255,.5); }
+    #bAtk { right: 28px; bottom: calc(60px + env(safe-area-inset-bottom)); width: 84px; height: 84px; }
+    #bJump { right: 124px; bottom: calc(36px + env(safe-area-inset-bottom)); }
+    #bDash { right: 28px; bottom: calc(160px + env(safe-area-inset-bottom)); }
+    #bSpec { right: 112px; bottom: calc(118px + env(safe-area-inset-bottom)); width: 60px; height: 60px; }
+    #msg { position: absolute; left: 50%; top: 22%; transform: translateX(-50%); font-size: 22px; letter-spacing: 2px; text-shadow: 0 0 12px #9b8cff; pointer-events: none; opacity: 0; }
+  </style>
+</head>
+<body>
+  <canvas id="game"></canvas>
+  <div id="hud">
+    <div class="bar" id="hp"></div>
+    <div id="energy"><div id="energyFill"></div></div>
+    <button id="menuBtn">II</button>
+    <div id="msg"></div>
+    <div id="stick"><div id="knob"></div></div>
+    <div class="btn" id="bJump">SAUT</div>
+    <div class="btn" id="bAtk">ATTAQUE</div>
+    <div class="btn" id="bDash">DASH</div>
+    <div class="btn" id="bSpec">SPÉC.</div>
+  </div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
