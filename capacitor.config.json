@@ -1,0 +1,7 @@
+{
+  "appId": "com.premium225.lumenfall",
+  "appName": "Lumenfall",
+  "webDir": "dist",
+  "android": { "allowMixedContent": false },
+  "server": { "androidScheme": "https" }
+}
