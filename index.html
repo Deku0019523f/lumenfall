@@ -38,6 +38,9 @@
     #bJump { right: 124px; bottom: calc(36px + env(safe-area-inset-bottom)); }
     #bDash { right: 28px; bottom: calc(160px + env(safe-area-inset-bottom)); }
     #bSpec { right: 112px; bottom: calc(118px + env(safe-area-inset-bottom)); width: 60px; height: 60px; }
+    #title { position: fixed; left: 0; right: 0; top: 32%; text-align: center; font-size: 38px; letter-spacing: 5px; text-shadow: 0 0 18px #9b8cff; pointer-events: none; opacity: 0; z-index: 20; }
+    #title small { display: block; font-size: 15px; letter-spacing: 6px; opacity: .75; margin-bottom: 6px; }
+    #fade { position: fixed; inset: 0; background: #000; opacity: 0; pointer-events: none; transition: opacity .7s; z-index: 30; }
     #msg { position: absolute; left: 50%; top: 22%; transform: translateX(-50%); font-size: 22px; letter-spacing: 2px; text-shadow: 0 0 12px #9b8cff; pointer-events: none; opacity: 0; }
   </style>
 </head>
@@ -54,6 +57,8 @@
     <div class="btn" id="bDash">DASH</div>
     <div class="btn" id="bSpec">SPÉC.</div>
   </div>
+  <div id="title"></div>
+  <div id="fade"></div>
   <div id="start">
     <h1>LUMENFALL</h1>
     <button id="startBtn">JOUER</button>
