@@ -3,7 +3,7 @@
 Usage : python3 tools/make_maps.py
 Contraintes de jouabilité : fossés <= 4 tuiles, marches <= 2 tuiles, aucune capacité obligatoire
 (double saut et saut mural ne servent qu'aux coffres/secrets)."""
-import os, random
+import os, random, re
 
 class Map:
     def __init__(s, w, h):
@@ -48,9 +48,10 @@ def write(name, title, m, width):
             c = m.g[y][x]
             if c in 'cSNMBCDW': assert y > 0 and m.g[y - 1][x] in '#=', (name, c, x, y, 'sans support')
     path = os.path.join(os.path.dirname(__file__), '..', 'src', 'levels', name + '.js')
-    body = ',\n'.join(f"    '{r}'" for r in rows)
+    rle = lambda r: re.sub(r'(.)\1+', lambda mo: mo.group(1) + str(len(mo.group(0))), r)
+    body = ',\n'.join(f"    '{rle(r)}'" for r in rows)
     open(path, 'w', encoding='utf-8').write(
-        f"// {title} — généré par tools/make_maps.py (légende dans plan.md)\nexport const map = [\n{body},\n];\n")
+        f"// {title} — généré par tools/make_maps.py (légende dans plan.md) ; lignes compressées (RLE, voir rle.js)\nimport {{ decode }} from './rle.js';\n\nexport const map = decode([\n{body},\n]);\n")
     print(f'{name}: {width}x{m.h}  c={cnt("c")} f={cnt("f")} S={cnt("S")} C={cnt("C")} N={cnt("N")} M={cnt("M")}')
 
 class Gen:
