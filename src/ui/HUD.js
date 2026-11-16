@@ -1,9 +1,12 @@
-// Interface : masques de vie, barre d'énergie, messages, barre de boss.
+// Interface : masques de vie, barre d'énergie, messages, titres de chapitre, barre de boss.
 export class HUD {
   constructor() {
     this.hpEl = document.getElementById('hp');
     this.fill = document.getElementById('energyFill');
     this.msg = document.getElementById('msg');
+    this.titleEl = document.getElementById('title');
+    this.fadeEl = document.getElementById('fade');
+    this.titleT = 0;
     this.lastHp = -1; this.lastMax = -1; this.msgT = 0;
     this.bossBar = document.createElement('div');
     this.bossBar.style.cssText = 'position:absolute;left:25%;right:25%;bottom:calc(14px + env(safe-area-inset-bottom));height:10px;background:#1d1a33;border:2px solid #5b5580;border-radius:6px;display:none;overflow:hidden;pointer-events:none';
@@ -19,11 +22,16 @@ export class HUD {
       this.hpEl.innerHTML = Array.from({ length: p.maxHp }, (_, i) => `<div class="mask${i < p.hp ? '' : ' empty'}"></div>`).join('');
     }
     this.fill.style.width = `${(p.energy / p.maxEnergy) * 100}%`;
+    if (this.titleT > 0) { this.titleT -= dt; this.titleEl.style.opacity = Math.min(1, this.titleT); }
     if (this.msgT > 0) { this.msgT -= dt; this.msg.style.opacity = Math.min(1, this.msgT * 2); }
     const show = boss && boss.active && !boss.dead;
     this.bossBar.style.display = show ? 'block' : 'none';
     if (show) this.bossFill.style.width = `${Math.max(0, boss.hp / boss.maxHp) * 100}%`;
   }
+
+  // Carte de titre : petite ligne (ex. « Chapitre 2 ») + grand titre
+  title(sub, main, t = 3.5) { this.titleEl.innerHTML = `<small>${sub}</small>${main}`; this.titleT = t; this.titleEl.style.opacity = 1; }
+  fade(on) { this.fadeEl.style.opacity = on ? 1 : 0; }
 
   say(text, t = 2) { this.msg.textContent = text; this.msgT = t; this.msg.style.opacity = 1; }
 }
