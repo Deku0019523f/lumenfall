@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { SpriteAnim } from '../engine/SpriteAnim.js';
 
 // Personnage dessiné procéduralement (style dessin animé) : "Veilleuse", petite chasseuse à cape.
 function drawHero() {
@@ -31,34 +32,59 @@ function drawHero() {
   return new THREE.CanvasTexture(c);
 }
 
-export function createHeroSprite() {
+// Héros : sorcier bleu animé (bandes de sprites). Repli : la Veilleuse dessinée par code si les images manquent.
+const HERO_H = 2.1;
+const STATE_ANIM = { idle: 'idle', run: 'walk', jump: 'jump', fall: 'jump', dash: 'dash', attack: 'dash', charge: 'idle', hurt: 'jump' };
+
+export function createHeroSprite(assets) {
+  const root = new THREE.Group();
+  const names = ['idle', 'walk', 'jump', 'dash'];
+  if (assets && names.every((n) => assets.strips['hero_' + n])) {
+    const anims = {};
+    for (const n of names) {
+      const a = new SpriteAnim(assets.strips['hero_' + n], HERO_H, { fps: n === 'walk' ? 16 : n === 'dash' ? 20 : 10 });
+      a.mesh.position.y = HERO_H / 2 - 0.05; a.mesh.visible = false; root.add(a.mesh); anims[n] = a;
+    }
+    anims.idle.mesh.visible = true;
+    return { root, anims, current: 'idle', mat: anims.idle.mat, mesh: anims.idle.mesh, sheet: true };
+  }
   const tex = drawHero();
   tex.magFilter = THREE.LinearFilter;
   const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true });
   const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 2.2), mat);
-  const root = new THREE.Group();
   mesh.position.y = 1.05;
   root.add(mesh);
-  return { root, mesh, mat };
+  return { root, mesh, mat, sheet: false };
 }
 
-// Animation par squash & stretch selon l'état (en attendant de vraies feuilles de sprites).
+// Animation selon l'état. Avec les sprites : choix de la bande + léger squash ; sinon squash & stretch seul.
 export function animateHero(p, dt) {
   const t = performance.now() / 1000;
+  const S = p.sprite;
   let sx = 1, sy = 1, rot = 0;
   switch (p.state) {
-    case 'run': sy = 1 + Math.sin(t * 20) * 0.04; sx = 1 - Math.sin(t * 20) * 0.03; rot = Math.sin(t * 10) * 0.03; break;
-    case 'jump': sx = 0.9; sy = 1.12; break;
-    case 'fall': sx = 1.06; sy = 0.94; break;
-    case 'dash': sx = 1.4; sy = 0.75; break;
-    case 'attack': sx = 1.12; sy = 0.95; rot = -0.12 * p.facing; break;
-    case 'charge': sx = 0.92 + Math.sin(t * 40) * 0.03; sy = 0.92; break;
+    case 'run': sy = 1 + Math.sin(t * 20) * 0.02; break;
+    case 'jump': sx = 0.95; sy = 1.06; break;
+    case 'fall': sx = 1.03; sy = 0.97; break;
+    case 'dash': sx = 1.15; sy = 0.9; break;
+    case 'attack': sx = 1.1; sy = 0.96; rot = -0.12 * p.facing; break;
+    case 'charge': sx = 0.94 + Math.sin(t * 40) * 0.03; sy = 0.94; break;
     case 'hurt': rot = 0.25 * -p.facing; break;
-    default: sy = 1 + Math.sin(t * 2.5) * 0.015;
+    default: sy = 1 + Math.sin(t * 2.5) * 0.012;
   }
-  p.sprite.mesh.scale.set(sx * p.facing, sy, 1);
-  p.sprite.mesh.rotation.z = rot;
-  p.sprite.root.position.set(p.x, p.y, 1);
-  // clignotement d'invincibilité
-  p.sprite.mat.opacity = p.invuln > 0 && Math.floor(t * 20) % 2 === 0 ? 0.35 : 1;
+  let mesh = S.mesh;
+  if (S.sheet) {
+    const name = STATE_ANIM[p.state] || 'idle';
+    if (name !== S.current) { S.anims[S.current].mesh.visible = false; S.current = name; S.anims[name].mesh.visible = true; S.anims[name].t = 0; }
+    const a = S.anims[name];
+    if (name === 'jump') a.setFrame(p.vy > 6 ? 1 : p.vy > 0 ? 3 : p.vy > -8 ? 5 : 7);
+    else a.play(dt);
+    mesh = a.mesh; S.mat = a.mat;
+    for (const n in S.anims) S.anims[n].mat.opacity = p.invuln > 0 && Math.floor(t * 20) % 2 === 0 ? 0.35 : 1;
+  } else {
+    S.mat.opacity = p.invuln > 0 && Math.floor(t * 20) % 2 === 0 ? 0.35 : 1;
+  }
+  mesh.scale.set(sx * p.facing, sy, 1);
+  mesh.rotation.z = rot;
+  S.root.position.set(p.x, p.y, 1);
 }

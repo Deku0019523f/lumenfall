@@ -1,11 +1,16 @@
 import * as THREE from 'three';
 import { Enemy } from '../enemies/Enemy.js';
 
-// Boss "La Gardienne des Racines" : 3 phases, attaques de plus en plus agressives.
+// Boss de chapitre : 3 phases, attaques de plus en plus agressives.
+// cfg : { name, hp, w, h, strip, spriteH, tint, color }  — chaque chapitre fournit sa propre config (voir levels/chapters.js).
 export class Boss extends Enemy {
-  constructor(game, x, y) {
-    super(game, x, y, { w: 2.6, h: 2.8, hp: 40, color: '#7a2f4a', scale: 4.2 });
-    this.maxHp = 40; this.phase = 1; this.state = 'idle'; this.stateT = 1.2; this.name = 'La Gardienne des Racines';
+  constructor(game, x, y, cfg = {}) {
+    const hp = cfg.hp ?? 40;
+    super(game, x, y, {
+      w: cfg.w ?? 2.6, h: cfg.h ?? 2.8, hp, color: cfg.color ?? '#7a2f4a', scale: 4.2,
+      skin: cfg.strip ? { strip: cfg.strip, h: cfg.spriteH ?? 3.6, fps: 10, tint: cfg.tint } : null,
+    });
+    this.maxHp = hp; this.phase = 1; this.state = 'idle'; this.stateT = 1.2; this.name = cfg.name ?? 'Gardien';
     this.contactDmg = 1; this.active = false; this.slamPending = false;
   }
 

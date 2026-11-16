@@ -3,7 +3,7 @@ import { updateMovement } from './Movement.js';
 import { updateCombat } from './Combat.js';
 
 export class Player {
-  constructor(scene, x, y) {
+  constructor(scene, x, y, assets) {
     this.x = x; this.y = y; this.w = 0.7; this.h = 1.5;
     this.vx = 0; this.vy = 0; this.prevY = y;
     this.facing = 1; this.state = 'idle';
@@ -16,7 +16,7 @@ export class Player {
     this.invuln = 0; this.hurtT = 0; this.dead = false;
     this.abilities = { dash: true, doubleJump: false, wall: false };
     this.spawnPoint = { x, y };
-    this.sprite = createHeroSprite();
+    this.sprite = createHeroSprite(assets);
     scene.add(this.sprite.root);
   }
 
