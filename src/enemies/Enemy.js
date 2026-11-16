@@ -31,15 +31,16 @@ export class Enemy {
     game.scene.add(this.mesh);
   }
 
-  hit(dmg, dir, game) {
+  hit(dmg, dir, game, heavy = false) {
     if (this.dead) return;
-    this.hp -= dmg; this.flash = 0.12; this.stun = 0.18; this.vx = dir * 6; if (this.gravity) this.vy = 5;
+    this.hp -= dmg; this.flash = 0.14; this.stun = heavy ? 0.3 : 0.2; this.vx = dir * (heavy ? 11 : 7); if (this.gravity) this.vy = heavy ? 7 : 4.5;
     if (this.hp <= 0) this.die(game);
   }
 
   die(game) {
     this.dead = true;
-    game.fx.burst(this.x, this.y + this.h / 2, 0xb59bff, 14, 8);
+    game.fx.burst(this.x, this.y + this.h / 2, 0xb59bff, 14, 8); game.fx.glow(this.x, this.y + this.h / 2, 0xb59bff, 2.5, 0.3);
+    game.shards?.drop(this.x, this.y + this.h / 2, this.shardValue ?? 1);
     game.scene.remove(this.mesh);
     if (this.anim) this.anim.dispose(); else { this.mesh.material.map.dispose(); this.mesh.material.dispose(); this.mesh.geometry.dispose(); }
     game.onEnemyKilled?.(this);
@@ -55,7 +56,8 @@ export class Enemy {
     if (this.anim) this.anim.play(dt);
     // sprite à bas aligné sur les pieds ; le repli dessiné est décalé comme avant
     this.mesh.position.set(this.x, this.y + (this.sheet ? this.scale / 2 - 0.02 : this.scale * 0.45), 1);
-    this.mesh.scale.x = -this.dir;
+    const sq = this.flash / 0.14;
+    this.mesh.scale.set(-this.dir * (1 + 0.22 * sq), 1 - 0.18 * sq, 1);
     this.mesh.material.color.setHex(this.flash > 0 ? 0xffaaaa : this.tint);
     this.mesh.material.opacity = this.flash > 0 ? 0.75 : 1;
     const p = game.player;

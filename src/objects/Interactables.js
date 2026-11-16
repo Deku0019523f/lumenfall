@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-// Points de sauvegarde (S), orbes de compétence (D, W) et coffres (C).
+// Points de sauvegarde (S), orbes de compétence (D) et coffres (C).
 export class Interactables {
   constructor(game, spawns) {
     this.game = game;
@@ -39,9 +39,9 @@ export class Interactables {
           g.save(); g.say('Sauvegardé');
         }
       } else if (it.kind === 'orb') {
-        it.used = true; g.collected.add(it.key); g.scene.remove(it.mesh); p.abilities[it.ability] = true; g.save(); g.say(it.label);
+        it.used = true; g.collected.add(it.key); g.scene.remove(it.mesh); p.abilities[it.ability] = true; g.fx.ring(p.x, p.y + 1, 0xffe08a, 5, 0.6); g.quests.progress('orb'); g.save(); g.say(it.label, 3);
       } else if (it.kind === 'chest') {
-        it.used = true; g.collected.add(it.key); it.mesh.material.color.setHex(0x55442a); p.maxHp++; p.hp = p.maxHp; g.save(); g.say('+1 VIE MAX');
+        it.used = true; g.collected.add(it.key); it.mesh.material.color.setHex(0x55442a); p.maxHp++; p.hp = p.maxHp; g.shards.drop(it.x, it.y + 1, 10); g.fx.ring(p.x, p.y + 1, 0xc58a3a, 4, 0.5); g.quests.progress('chest'); g.save(); g.say('+1 VIE MAX  +10 ✦', 2.5);
       }
     }
   }
