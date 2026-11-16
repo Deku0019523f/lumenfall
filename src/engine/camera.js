@@ -9,6 +9,7 @@ export class GameCamera {
     this.y = 0;
     this.shakeT = 0;
     this.shakeAmp = 0;
+    this.zoomP = 0; // « coup de zoom » à l'impact
     this.bounds = null; // {minX,maxX,minY,maxY} en unités monde
     this.resize();
     window.addEventListener('resize', () => this.resize());
@@ -27,7 +28,9 @@ export class GameCamera {
 
   snapTo(x, y) { this.x = x; this.y = y; this.#clamp(); }
 
-  shake(amp = 0.25, dur = 0.2) { this.shakeAmp = amp; this.shakeT = dur; }
+  shake(amp = 0.25, dur = 0.2) { if (amp >= this.shakeAmp * (this.shakeT > 0 ? 0.6 : 0)) { this.shakeAmp = amp; this.shakeT = dur; } }
+
+  punch(z = 0.04) { this.zoomP = Math.max(this.zoomP, z); }
 
   follow(target, facing, dt) {
     const tx = target.x + facing * 1.5;
@@ -43,6 +46,8 @@ export class GameCamera {
       ox = (Math.random() - 0.5) * this.shakeAmp;
       oy = (Math.random() - 0.5) * this.shakeAmp;
     }
+    this.zoomP *= Math.pow(0.0005, dt);
+    this.cam.zoom = 1 + this.zoomP; this.cam.updateProjectionMatrix();
     this.cam.position.x = this.x + ox;
     this.cam.position.y = this.y + oy;
   }
