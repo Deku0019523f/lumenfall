@@ -11,12 +11,12 @@ export class Boss extends Enemy {
       skin: cfg.strip ? { strip: cfg.strip, h: cfg.spriteH ?? 3.6, fps: 10, tint: cfg.tint } : null,
     });
     this.maxHp = hp; this.phase = 1; this.state = 'idle'; this.stateT = 1.2; this.name = cfg.name ?? 'Gardien';
-    this.contactDmg = 1; this.active = false; this.slamPending = false;
+    this.contactDmg = 1; this.active = false; this.slamPending = false; this.home = { x, y }; this.shardValue = cfg.shards ?? 40; this.mini = !!cfg.mini;
   }
 
-  hit(dmg, dir, game) {
+  hit(dmg, dir, game, heavy = false) {
     if (this.dead) return;
-    this.hp -= dmg; this.flash = 0.08; // pas de stun : un boss ne se laisse pas interrompre
+    this.hp -= dmg; this.flash = 0.1; // pas de stun : un boss ne se laisse pas interrompre
     const ph = this.hp < this.maxHp * 0.33 ? 3 : this.hp < this.maxHp * 0.66 ? 2 : 1;
     if (ph !== this.phase) { this.phase = ph; this.state = 'roar'; this.stateT = 1.0; this.vx = 0; game.camera.shake(0.6, 0.6); game.onBossPhase?.(ph); }
     if (this.hp <= 0) this.die(game);
@@ -24,6 +24,7 @@ export class Boss extends Enemy {
 
   ai(game, dt) {
     const p = game.player;
+    if (this.y < -2) { this.x = this.home.x; this.y = this.home.y; this.vx = this.vy = 0; } // tombé dans le vide
     if (!this.active) { if (Math.abs(p.x - this.x) < 14) { this.active = true; game.onBossStart?.(this); } else return; }
     const sp = 1 + (this.phase - 1) * 0.3; // vitesse selon la phase
     this.stateT -= dt;

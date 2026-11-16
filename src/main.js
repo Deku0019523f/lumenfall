@@ -4,11 +4,19 @@ import { aabb } from './engine/physics.js';
 import { Player } from './player/Player.js';
 import { Effects } from './systems/Effects.js';
 import { SaveSystem } from './systems/SaveSystem.js';
+import { Quests } from './systems/Quests.js';
+import { applySkills } from './systems/Skills.js';
+import { Shards } from './objects/Shards.js';
 import { Input } from './ui/Input.js';
 import { HUD } from './ui/HUD.js';
+import { Dialogue } from './ui/Dialogue.js';
+import { Menu } from './ui/Menu.js';
 import { World } from './world/World.js';
 import { CHAPTERS } from './levels/chapters.js';
+import { INTRO, ENDING, STORY } from './story/story.js';
 import { loadAssets } from './assets/Assets.js';
+
+const SAVE_VERSION = 3;
 
 async function boot() {
   const assets = await loadAssets();
@@ -19,68 +27,143 @@ async function boot() {
   const input = new Input();
   const hud = new HUD();
   const fx = new Effects(scene);
+  const dialogue = new Dialogue();
 
   const game = {
-    scene, camera, fx, input, assets, hud,
-    world: null, level: null, player: null, boss: null, inter: null,
+    scene, camera, fx, input, assets, hud, dialogue,
+    world: null, level: null, player: null, boss: null, miniBoss: null, inter: null, npcs: [],
     enemies: [], projectiles: [], enemyShots: [],
-    collected: new Set(), bossDead: {}, transitioning: false,
-    say: (t) => hud.say(t),
+    collected: new Set(), bossDead: {}, seen: new Set(), unlocked: 0, transitioning: false, hitStop: 0,
+    say: (t, d) => hud.say(t, d),
     save(extra = {}) {
       const p = this.player;
       SaveSystem.write({
-        v: 2, chapter: this.world.index, spawn: { x: p.spawnPoint.x, y: p.spawnPoint.y },
-        maxHp: p.maxHp, abilities: p.abilities, collected: [...this.collected], bossDead: this.bossDead, ...extra,
+        v: SAVE_VERSION, chapter: this.world.index, spawn: { x: p.spawnPoint.x, y: p.spawnPoint.y },
+        maxHp: p.maxHp, abilities: p.abilities, collected: [...this.collected], bossDead: this.bossDead,
+        shards: p.shards, skills: p.skills, quests: this.quests.toJSON(), seen: [...this.seen], unlocked: this.unlocked, ...extra,
       });
     },
     onPlayerDeath() { setTimeout(() => { game.player.respawn(); hud.say('Renaissance'); }, 1200); },
-    onBossStart(b) { hud.say(b.name.toUpperCase(), 2.5); },
+    onBossStart(b) {
+      hud.say(b.name.toUpperCase(), 2.5);
+      if (!b.mini) dialogue.start(STORY[game.world.index].bossIntro);
+    },
     onBossPhase(n) { hud.say(`PHASE ${n}`, 1.5); },
-    onEnemyKilled(e) { if (e === game.boss) { game.bossDead[game.world.index] = true; hud.say('BOSS VAINCU', 3); setTimeout(endChapter, 3200); } },
+    onEnemyKilled(e) {
+      const idx = game.world.index;
+      if (e === game.boss) {
+        game.bossDead[idx] = true; game.quests.progress('boss'); game.hitStop = 0.35; camera.shake(0.7, 0.6); camera.punch(0.12);
+        hud.say('BOSS VAINCU', 3); game.save();
+        setTimeout(() => dialogue.start(STORY[idx].outro, endChapter), 2200);
+      } else if (e.mini) {
+        game.bossDead['m' + idx] = true; game.quests.progress('mini'); camera.shake(0.5, 0.4);
+        hud.say(`${e.name.toUpperCase()} VAINCU`, 3); game.save();
+      } else game.quests.progress('kill');
+    },
   };
   game.world = new World(game);
+  game.shards = new Shards(game);
+  game.quests = new Quests(game);
   window.__lumenfall = game; // accès console (débogage / tests)
-
-  // --- Sauvegarde (v2) ou démarrage ; ?chapitre=N pour tester directement un chapitre
-  const urlCh = parseInt(new URLSearchParams(location.search).get('chapitre'), 10);
-  const dev = urlCh >= 1 && urlCh <= CHAPTERS.length;
-  let saved = dev ? null : SaveSystem.load();
-  if (saved && saved.v !== 2) { SaveSystem.clear(); saved = null; } // ancienne sauvegarde (avant les chapitres)
 
   game.player = new Player(scene, 0, 0, assets);
   const P = game.player;
-  let chapter = 0, spawn = null;
-  if (saved) {
-    chapter = Math.min(saved.chapter ?? 0, CHAPTERS.length - 1);
-    spawn = saved.spawn || null;
-    P.maxHp = saved.maxHp ?? 5; Object.assign(P.abilities, saved.abilities);
-    game.collected = new Set(saved.collected || []); game.bossDead = saved.bossDead || {};
-  } else if (dev) {
-    chapter = urlCh - 1;
-    if (chapter >= 1) P.abilities.doubleJump = true;
-    if (chapter >= 2) P.abilities.wall = true;
+
+  // --- Progression (sauvegarde v3 ; v2 acceptée)
+  function applyProgress(d = {}) {
+    P.maxHp = d.maxHp ?? 5; P.hp = P.maxHp;
+    P.abilities = { dash: true, doubleJump: false, wall: false, ...(d.abilities || {}) };
+    P.shards = d.shards || 0; P.energy = 0;
+    applySkills(P, d.skills || []);
+    game.collected = new Set(d.collected || []); game.bossDead = d.bossDead || {};
+    game.seen = new Set(d.seen || []); game.unlocked = d.unlocked ?? d.chapter ?? 0;
+    game.quests.load(d.quests);
   }
-  const first = game.world.load(chapter, spawn, !!game.bossDead[chapter]);
-  hud.title(first.subtitle, first.title);
+  const loadSave = () => { const s = SaveSystem.load(); if (s && (s.v === 2 || s.v === 3)) return s; if (s) SaveSystem.clear(); return null; };
+  const urlCh = parseInt(new URLSearchParams(location.search).get('chapitre'), 10);
+  const dev = urlCh >= 1 && urlCh <= CHAPTERS.length;
 
   // --- Fin de chapitre : fondu, chapitre suivant (ou fin du jeu)
   function endChapter() {
     const idx = game.world.index, next = idx + 1;
-    if (next >= CHAPTERS.length) { game.save(); hud.title('FIN', 'Merci d\'avoir joué', 8); return; }
+    if (next >= CHAPTERS.length) {
+      game.save();
+      dialogue.start(ENDING, () => { hud.title('FIN', "Merci d'avoir joué", 8); setTimeout(() => showStart(), 8500); });
+      return;
+    }
     game.transitioning = true;
-    game.save({ chapter: next, spawn: null }); // la progression est sauvegardée avant la transition
+    game.unlocked = Math.max(game.unlocked, next);
+    game.save({ chapter: next, spawn: null });
     hud.fade(true);
-    setTimeout(() => {
-      const ch = game.world.load(next, null, false);
-      hud.title(ch.subtitle, ch.title);
-      game.transitioning = false;
-      hud.fade(false);
-    }, 900);
+    setTimeout(() => { enterChapter(next, null); game.transitioning = false; hud.fade(false); }, 900);
   }
 
-  document.getElementById('menuBtn').addEventListener('click', () => {
-    if (confirm('Effacer la sauvegarde et recommencer ?')) { SaveSystem.clear(); location.href = location.pathname; }
+  // Charge un chapitre, affiche le titre puis la scène d'arrivée (une seule fois)
+  function enterChapter(i, spawn) {
+    const ch = game.world.load(i, spawn);
+    hud.title(ch.subtitle, ch.title);
+    const key = `arr:${i}`;
+    if (!game.seen.has(key)) { game.seen.add(key); setTimeout(() => dialogue.start(STORY[i].arrival), 1200); }
+    return ch;
+  }
+
+  // --- Menus
+  const menu = new Menu(game, {
+    hasSave: () => !!loadSave(),
+    savedChapter: () => loadSave()?.chapter ?? 0,
+    unlocked: () => Math.max(loadSave()?.unlocked ?? 0, loadSave()?.chapter ?? 0),
+    continue() {
+      const s = loadSave(); if (!s) return;
+      applyProgress(s); window.enterGame(); menu.hide();
+      enterChapter(Math.min(s.chapter ?? 0, CHAPTERS.length - 1), s.spawn || null);
+    },
+    newGame() {
+      SaveSystem.clear(); applyProgress({}); window.enterGame(); menu.hide();
+      const ch = game.world.load(0, null);
+      hud.title(ch.subtitle, ch.title);
+      game.seen.add('intro'); game.seen.add('arr:0');
+      dialogue.start(INTRO, () => dialogue.start(STORY[0].arrival));
+    },
+    chapter(i) {
+      const s = loadSave(); if (s) applyProgress(s);
+      window.enterGame(); menu.hide(); enterChapter(i, null);
+    },
+    resume() { menu.hide(); },
+    mainMenu() { if (game.world.index >= 0) game.save(); showStart(); },
+    erase() { SaveSystem.clear(); applyProgress({}); game.world.load(0, null); showStart(); },
   });
+  function showStart() {
+    const s = loadSave();
+    game.transitioning = false; hud.fade(false);
+    if (!s) { applyProgress({}); }
+    game.world.load(s ? Math.min(s.chapter ?? 0, CHAPTERS.length - 1) : 0, s?.spawn || null); // décor de fond
+    menu.show('start');
+  }
+
+  game.menu = menu;
+  document.getElementById('menuBtn').addEventListener('click', togglePause);
+  window.addEventListener('keydown', (e) => { if (e.code === 'Escape') togglePause(); });
+  function togglePause() {
+    if (menu.screen === 'start' || menu.screen === 'help' || menu.screen === 'chapters') return;
+    if (menu.open) { menu.hide(); return; }
+    if (document.body.dataset.started !== '1' || dialogue.active || game.transitioning) return;
+    menu.show('pausemenu');
+  }
+
+  // --- Démarrage : ?chapitre=N lance directement (test) ; sinon menu de démarrage
+  if (dev) {
+    applyProgress({ shards: 150, unlocked: urlCh - 1 });
+    if (urlCh >= 2) P.abilities.doubleJump = true;
+    if (urlCh >= 3) P.abilities.wall = true;
+    document.body.dataset.started = '1';
+    game.seen.add('intro'); game.seen.add(`arr:${urlCh - 1}`);
+    const ch = game.world.load(urlCh - 1, null); hud.title(ch.subtitle, ch.title);
+  } else {
+    const s = loadSave();
+    applyProgress(s || {});
+    game.world.load(s ? Math.min(s.chapter ?? 0, CHAPTERS.length - 1) : 0, s?.spawn || null);
+    menu.show('start');
+  }
 
   function updateEnemyShots(dt) {
     for (let i = game.enemyShots.length - 1; i >= 0; i--) {
@@ -99,20 +182,32 @@ async function boot() {
     const dt = Math.min((now - last) / 1000, 1 / 30); // plafonné pour éviter les sauts après un lag
     last = now;
 
-    // Figé tant que le joueur n'a pas touché "JOUER" (et pendant les transitions de chapitre)
-    if (document.body.dataset.started === '1' && !game.transitioning) {
+    const started = document.body.dataset.started === '1';
+    const frozen = game.hitStop > 0;
+    if (frozen) game.hitStop -= dt;
+    const blocked = menu.open || dialogue.active || game.transitioning || !started;
+
+    if (started && !blocked && !frozen) {
       game.player.update(input, game, dt);
       for (const e of game.enemies) e.update(game, dt);
       game.enemies = game.enemies.filter((e) => !e.dead);
       updateEnemyShots(dt);
       game.inter.update(dt);
-      fx.update(dt);
-      camera.follow(game.player, game.player.facing, dt);
-      hud.update(game.player, game.boss, dt);
+      for (const n of game.npcs) n.update(dt);
+      game.shards.update(dt);
+    }
+    if (started) {
+      dialogue.update(dt, input);
+      fx.update(frozen ? dt * 0.15 : dt);
+      if (!menu.open) {
+        camera.follow(game.player, game.player.facing, dt);
+        const b = game.boss?.active && !game.boss.dead ? game.boss : game.miniBoss?.active && !game.miniBoss.dead ? game.miniBoss : null;
+        hud.update(game.player, b, dt, game.quests);
+      }
     }
     game.world.update(dt);
     renderer.render(scene, camera.cam);
-    input.endFrame();
+    if (!frozen) input.endFrame(); // les appuis ne se perdent pas pendant le hit-stop
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
