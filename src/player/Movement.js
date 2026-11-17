@@ -23,7 +23,7 @@ export function updateMovement(p, input, level, dt, game) {
     p.attackT = 0; p.hitSet.clear();
     p.dashT = m.dashTime; p.dashCd = st.dashCd; p.invuln = Math.max(p.invuln, m.dashTime + (st.ghost ? 0.25 : 0.05));
     p.dashHit = new Set();
-    game?.fx.puff(p.x, p.y, 5); game?.camera.punch(0.015);
+    game?.fx.puff(p.x, p.y, 5); game?.camera.punch(0.015); game?.audio?.sfx('dash');
     p.dashDir = input.axisX !== 0 ? Math.sign(input.axisX) : p.facing;
     p.facing = p.dashDir; p.vy = 0;
   }
@@ -50,9 +50,13 @@ export function updateMovement(p, input, level, dt, game) {
 
   // Saut / double saut / saut mural
   if (p.jumpBuf > 0 && p.state !== 'hurt') {
-    if (p.onGround || p.coyoteT > 0) { p.vy = m.jumpV; p.jumpBuf = 0; p.coyoteT = 0; p.airJumps = 0; }
-    else if (p.abilities.wall && p.touchingWall) { p.vy = m.jumpV; p.vx = -p.wallDir * m.wallJumpX; p.facing = -p.wallDir; p.jumpBuf = 0; }
-    else if (p.abilities.doubleJump && p.airJumps < 1) { p.vy = m.jumpV * 0.92; p.airJumps++; p.jumpBuf = 0; }
+    if (p.onGround || p.coyoteT > 0) { game?.audio?.sfx('jump'); p.vy = m.jumpV; p.jumpBuf = 0; p.coyoteT = 0; p.airJumps = 0; }
+    else if (p.abilities.wall && p.touchingWall && p.wallDir !== p.lastWallJump && input.axisX * p.wallDir > 0.3) {
+      // Saut mural : il faut pousser vers le mur et alterner les côtés (plus de « spam » sur SAUT)
+      p.vy = m.jumpV * 0.88; p.vx = -p.wallDir * m.wallJumpX; p.facing = -p.wallDir; p.jumpBuf = 0; p.lastWallJump = p.wallDir;
+      game?.fx.puff(p.x + p.wallDir * 0.3, p.y + 0.8, 3);
+    }
+    else if (p.abilities.doubleJump && p.airJumps < 1) { game?.audio?.sfx('jump'); p.vy = m.jumpV * 0.92; p.airJumps++; p.jumpBuf = 0; }
   }
   if (input.released.jump && p.vy > 0 && p.dashT <= 0) p.vy *= m.jumpCut; // hauteur variable
 
@@ -64,7 +68,7 @@ export function updateMovement(p, input, level, dt, game) {
   const was = p.onGround;
   p.onGround = res.onGround;
   if (was && !p.onGround && p.vy <= 0) p.coyoteT = m.coyote;
-  if (p.onGround) p.airJumps = 0;
+  if (p.onGround) { p.airJumps = 0; p.lastWallJump = 0; }
   if (p.onGround && !was && p.prevVy < -9) { game?.fx.puff(p.x, p.y, 6); }
   p.prevVy = p.vy;
   return res;

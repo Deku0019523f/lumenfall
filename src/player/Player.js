@@ -18,7 +18,7 @@ export class Player {
     this.comboIdx = 0; this.comboT = 0; this.chargeT = 0; this.hitSet = new Set();
     this.maxHp = 5; this.hp = 5; this.maxEnergy = 9; this.energy = 0;
     this.invuln = 0; this.hurtT = 0; this.dead = false;
-    this.stats = defaultStats(); this.airDashes = 0; this.lungeT = 0; this.lungeV = 0; this.atkBuf = 0; this.attackFinisher = false; this.attackAnim = 0; this.prevVy = 0; this.hitCount = 0; this.shards = 0;
+    this.stats = defaultStats(); this.airDashes = 0; this.lastWallJump = 0; this.lungeT = 0; this.lungeV = 0; this.atkBuf = 0; this.attackFinisher = false; this.attackAnim = 0; this.prevVy = 0; this.hitCount = 0; this.shards = 0;
     this.abilities = { dash: true, doubleJump: false, wall: false };
     this.spawnPoint = { x, y };
     this.sprite = createHeroSprite(assets);
@@ -26,7 +26,7 @@ export class Player {
   }
 
   update(input, game, dt) {
-    if (this.dead) return;
+    if (this.dead) { animateHero(this, dt); return; }
     if (this.invuln > 0) this.invuln -= dt;
     if (this.hurtT > 0) { this.hurtT -= dt; if (this.hurtT <= 0) this.state = 'idle'; }
 
@@ -49,6 +49,7 @@ export class Player {
 
   damage(n, fromDir, game, respawn = false) {
     if (this.invuln > 0 || this.dead) return;
+    game.audio?.sfx('hurt');
     this.hp -= n; this.invuln = 1.0; this.state = 'hurt'; this.hurtT = 0.25;
     this.vx = -fromDir * 7; this.vy = 9;
     game.camera.shake(0.4, 0.28); game.camera.punch(0.06); game.hitStop = Math.max(game.hitStop || 0, 0.09);
