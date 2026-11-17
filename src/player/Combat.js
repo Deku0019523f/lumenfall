@@ -17,6 +17,7 @@ function hitbox(p, kind) {
 }
 
 function onKill(p, game, e) {
+  game.audio?.sfx('kill');
   game.hitStop = Math.max(game.hitStop || 0, 0.12);
   game.camera.shake(0.35, 0.2); game.camera.punch(0.07);
   game.fx.ring(e.x, e.y + e.h / 2, 0xb59bff, 4, 0.4);
@@ -29,7 +30,7 @@ function strike(p, game, kind, dmg) {
   for (const e of game.enemies) {
     if (e.dead || p.hitSet.has(e)) continue;
     if (!aabb(hb, e)) continue;
-    p.hitSet.add(e);
+    p.hitSet.add(e); game.audio?.sfx('hit');
     const dir = Math.sign(e.x - p.x) || p.facing;
     e.hit(dmg, dir, game, heavy);
     const cx = e.x, cy = e.y + e.h / 2;
@@ -69,6 +70,7 @@ function startAttack(p, game, kind, charged, input) {
     if (p.onGround) { p.lungeT = 0.1; p.lungeV = charged ? 13 : p.attackFinisher ? 11 : 7.5; }
   }
   const heavy = charged || p.attackFinisher;
+  game.audio?.sfx(heavy ? 'slashHeavy' : 'slash');
   game.fx.slash(p, kind === 'charged' ? 'front' : kind, charged ? 1.5 : p.attackFinisher ? 1.25 : 1,
     charged ? 0x6ee7ff : p.attackFinisher ? 0xffe9a0 : 0xdff6ff, heavy);
   if (heavy) { game.camera.shake(0.18, 0.12); game.camera.punch(0.03); }
@@ -81,13 +83,13 @@ function fireProj(p, game, { dmg, color, size = 1, speed = COMBAT.projSpeed, pie
   }));
   m.scale.set(1.1 * size, 1.1 * size, 1);
   m.position.set(p.x + p.facing * 0.8, p.y + 1, 3);
-  game.scene.add(m);
+  game.scene.add(m); game.audio?.sfx('spell');
   game.projectiles.push({ mesh: m, x: m.position.x, y: m.position.y, w: 0.7 * size, h: 0.7 * size, vx: p.facing * speed, life: 1.2, dmg, pierce, color, hit: new Set() });
 }
 
 function nova(p, game) {
   const C = COMBAT, R = 3.5;
-  p.energy -= C.novaCost;
+  p.energy -= C.novaCost; game.audio?.sfx('nova');
   game.fx.ring(p.x, p.y + 0.9, 0xffe9a0, R * 2.2, 0.45); game.fx.ring(p.x, p.y + 0.9, 0xffffff, R * 1.5, 0.3);
   game.fx.glow(p.x, p.y + 0.9, 0xffe9a0, R * 1.6, 0.35, 1.3);
   game.fx.sparks(p.x, p.y + 0.9, 0xffe9a0, 18, 12);
