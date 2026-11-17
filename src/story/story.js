@@ -32,8 +32,8 @@ export const STORY = [
     },
     quests: [
       { id: 'c1_talk', type: 'talk', goal: 1, title: "Parler à Mousse l'Ancien", reward: 3 },
-      { id: 'c1_kill', type: 'kill', goal: 12, title: 'Chasser 12 créatures enragées', reward: 15 },
-      { id: 'c1_chest', type: 'chest', goal: 2, title: 'Ouvrir 2 coffres des anciens', reward: 15 },
+      { id: 'c1_kill', type: 'kill', goal: 25, title: 'Chasser 25 créatures enragées', reward: 15 },
+      { id: 'c1_chest', type: 'chest', goal: 5, title: 'Ouvrir 5 coffres des anciens', reward: 15 },
       { id: 'c1_mini', type: 'mini', goal: 1, title: 'Vaincre le Gardien du Pont', reward: 20 },
       { id: 'c1_boss', type: 'boss', goal: 1, title: 'Vaincre la Gardienne des Racines', reward: 30 },
     ],
@@ -58,8 +58,8 @@ export const STORY = [
     quests: [
       { id: 'c2_talk', type: 'talk', goal: 1, title: "Écouter Zéphyr", reward: 3 },
       { id: 'c2_orb', type: 'orb', goal: 1, title: 'Trouver l\'orbe du vent (saut mural)', reward: 10 },
-      { id: 'c2_kill', type: 'kill', goal: 20, title: 'Repousser 20 créatures des plaines', reward: 25 },
-      { id: 'c2_chest', type: 'chest', goal: 3, title: 'Ouvrir 3 coffres', reward: 25 },
+      { id: 'c2_kill', type: 'kill', goal: 40, title: 'Repousser 40 créatures des plaines', reward: 25 },
+      { id: 'c2_chest', type: 'chest', goal: 7, title: 'Ouvrir 7 coffres', reward: 25 },
       { id: 'c2_mini', type: 'mini', goal: 1, title: 'Vaincre la Sentinelle du Vent', reward: 25 },
       { id: 'c2_boss', type: 'boss', goal: 1, title: 'Vaincre le Souffle Ancien', reward: 40 },
     ],
@@ -83,8 +83,8 @@ export const STORY = [
     },
     quests: [
       { id: 'c3_talk', type: 'talk', goal: 1, title: 'Rassurer Mirelle', reward: 3 },
-      { id: 'c3_kill', type: 'kill', goal: 28, title: 'Nettoyer le village : 28 créatures', reward: 35 },
-      { id: 'c3_chest', type: 'chest', goal: 4, title: 'Ouvrir 4 coffres', reward: 35 },
+      { id: 'c3_kill', type: 'kill', goal: 55, title: 'Nettoyer le village : 55 créatures', reward: 35 },
+      { id: 'c3_chest', type: 'chest', goal: 9, title: 'Ouvrir 9 coffres', reward: 35 },
       { id: 'c3_mini', type: 'mini', goal: 1, title: 'Vaincre le Veilleur Gelé', reward: 30 },
       { id: 'c3_boss', type: 'boss', goal: 1, title: 'Vaincre le Roi Gélatine', reward: 60 },
     ],
