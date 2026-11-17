@@ -1,6 +1,6 @@
 import { defaultStats } from '../player/Player.js';
 
-// Compétences à débloquer avec les éclats de lumière. 3 branches ; `req` = compétence requise.
+// Compétences à débloquer avec les étincelles. 3 branches ; `req` = compétence requise.
 export const BRANCHES = {
   blade: { name: 'Lame', color: '#8fd8ff' },
   shadow: { name: 'Ombre', color: '#b59bff' },
