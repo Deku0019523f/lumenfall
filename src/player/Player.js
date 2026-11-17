@@ -26,7 +26,7 @@ export class Player {
   }
 
   update(input, game, dt) {
-    if (this.dead) { animateHero(this, dt); return; }
+    if (this.dead || game.portals?.tele) { animateHero(this, dt); return; } // mort ou aspiré par un portail
     if (this.invuln > 0) this.invuln -= dt;
     if (this.hurtT > 0) { this.hurtT -= dt; if (this.hurtT <= 0) this.state = 'idle'; }
 

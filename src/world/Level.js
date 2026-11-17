@@ -2,9 +2,9 @@ import * as THREE from 'three';
 import { SpriteAnim } from '../engine/SpriteAnim.js';
 
 // Légende : # solide | = plateforme traversable | ^ pics | . vide
-// P départ | c rampant | f volant | k cracheur | h sauteur | w esprit | r brute | S sauvegarde | C coffre | D orbe double-saut | W orbe saut mural | B boss
+// P départ | c rampant | f volant | k cracheur | h sauteur | w esprit | r brute | S sauvegarde | C coffre | D orbe double-saut | W orbe saut mural | B boss | T/t portails appariés (le 1er T ↔ le 1er t…)
 // Décor animé (sans collision) : p plante | q tige | b fleur bleue
-const SPAWN_CHARS = 'cfkhwrSCDWBNM';
+const SPAWN_CHARS = 'cfkhwrSCDWBNMTt';
 const DECOR = {
   p: { strip: 'plant1', h: 1.7 },
   q: { strip: 'plant4', h: 2.2 },
