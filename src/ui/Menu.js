@@ -102,7 +102,7 @@ export class Menu {
     return `<div class="beam"></div><div class="panel"><h2>Comment jouer</h2>
       <div class="help"><p><b>Joystick</b> : bouger. Haut + ATTAQUE = coup vers le haut, Bas + ATTAQUE en l'air = coup plongeant (rebond).</p>
       <p><b>ATTAQUE</b> : enchaîne un combo ; maintiens puis relâche pour une attaque chargée. <b>DASH</b> : esquive invincible. <b>SPÉC.</b> : projectile (3 énergie, gagnée en frappant).</p>
-      <p>Les ennemis laissent des <b>éclats de lumière ✦</b> : dépense-les dans <b>II → Compétences</b>. Parle aux PNJ lumineux pour recevoir des quêtes.</p>
+      <p>Les ennemis laissent des <b>étincelles ✦</b> : dépense-les dans <b>II → Compétences</b>. Parle aux PNJ lumineux pour recevoir des quêtes.</p>
       <p><b>Portails</b> : approche-toi pour les éveiller, puis appuie sur <b>HAUT</b> dedans pour te téléporter vers leur jumeau déjà découvert. Après un boss, un portail t'emmène au chapitre suivant.</p>
       <p><b>Saut mural</b> (une fois l'orbe trouvée) : pousse vers le mur, puis saute en alternant les murs. Les caves cachent des coffres ; les boss changent d'attaque à chaque phase.</p>
       <p class="dim2">Clavier : flèches/ZQSD · Espace saut · J attaque · L dash · U spécial · Échap pause</p></div>
@@ -113,7 +113,7 @@ export class Menu {
     const item = (act, label, extra = '', cls = '') => `<button data-act="${act}" class="mi ${cls}"><i>❦</i><span>${label}${extra}</span></button>`;
     return `<div class="panel"><h2>Pause</h2><nav class="list">
       ${item('resume', 'Reprendre')}
-      ${item('skills', 'Compétences', `<small>✦ ${this.game.player.shards} éclats</small>`)}
+      ${item('skills', 'Compétences', `<small>✦ ${this.game.player.shards} étincelles</small>`)}
       ${item('quests', 'Quêtes')}
       ${item('options', 'Options')}
       ${item('main', 'Menu principal')}
@@ -140,7 +140,7 @@ export class Menu {
   #tabs(cur) {
     const t = (id, l) => `<button data-act="tab" data-arg="${id}" class="tab ${cur === id ? 'on' : ''}">${l}</button>`;
     return `<div class="tabs">${t('skills', 'Compétences')}${t('quests', 'Quêtes')}</div>
-      <div class="compass" title="Éclats de lumière"><b>${this.game.player.shards}</b><small>✦</small></div>`;
+      <div class="compass" title="Étincelles"><b>${this.game.player.shards}</b><small>✦</small></div>`;
   }
 
   '#skills'() {
@@ -164,7 +164,7 @@ export class Menu {
     };
     const sn = skillById(this.sel), st = this.sel === 'root' ? 'owned' : canBuy(p, this.sel), open = reveal(sn);
     const info = !open ? '<b>???</b><span>Débloque la compétence précédente pour la révéler.</span>'
-      : `<b>${esc(sn.name)}</b><span>${esc(sn.desc)}</span>` + (sn.id === 'root' ? '' : st === 'owned' ? '<em class="g">✔ Acquis</em>' : st === 'locked' ? `<em>🔒 Requiert ${esc(skillById(sn.req).name)}</em>` : `<em>✦ ${sn.cost}${st === 'poor' ? ' — il te manque ' + (sn.cost - p.shards) + ' éclats' : ''}</em>`);
+      : `<b>${esc(sn.name)}</b><span>${esc(sn.desc)}</span>` + (sn.id === 'root' ? '' : st === 'owned' ? '<em class="g">✔ Acquis</em>' : st === 'locked' ? `<em>🔒 Requiert ${esc(skillById(sn.req).name)}</em>` : `<em>✦ ${sn.cost}${st === 'poor' ? ' — il te manque ' + (sn.cost - p.shards) + ' étincelles' : ''}</em>`);
     const canDo = open && st === 'ok';
     return `${this.#tabs('skills')}
       <svg class="graph" viewBox="0 0 1000 500" preserveAspectRatio="xMidYMid meet">${lines}${nodes.map(node).join('')}</svg>
