@@ -36,12 +36,12 @@ export class Interactables {
           for (const o of this.list) if (o.kind === 'save') { o.active = false; o.mesh.material.color.setHex(0x6ee7ff); }
           it.active = true; it.mesh.material.color.setHex(0xffffff);
           p.spawnPoint = { x: it.x, y: it.y }; p.hp = p.maxHp;
-          g.save(); g.say('Sauvegardé');
+          g.audio?.sfx('ui'); g.save(); g.say('Sauvegardé');
         }
       } else if (it.kind === 'orb') {
-        it.used = true; g.collected.add(it.key); g.scene.remove(it.mesh); p.abilities[it.ability] = true; g.fx.ring(p.x, p.y + 1, 0xffe08a, 5, 0.6); g.quests.progress('orb'); g.save(); g.say(it.label, 3);
+        it.used = true; g.collected.add(it.key); g.scene.remove(it.mesh); p.abilities[it.ability] = true; g.audio?.sfx('skill'); g.fx.ring(p.x, p.y + 1, 0xffe08a, 5, 0.6); g.quests.progress('orb'); g.save(); g.say(it.label, 3);
       } else if (it.kind === 'chest') {
-        it.used = true; g.collected.add(it.key); it.mesh.material.color.setHex(0x55442a); p.maxHp++; p.hp = p.maxHp; g.shards.drop(it.x, it.y + 1, 10); g.fx.ring(p.x, p.y + 1, 0xc58a3a, 4, 0.5); g.quests.progress('chest'); g.save(); g.say('+1 VIE MAX  +10 ✦', 2.5);
+        it.used = true; g.collected.add(it.key); it.mesh.material.color.setHex(0x55442a); g.audio?.sfx('chest'); p.maxHp++; p.hp = p.maxHp; g.shards.drop(it.x, it.y + 1, 10); g.fx.ring(p.x, p.y + 1, 0xc58a3a, 4, 0.5); g.quests.progress('chest'); g.save(); g.say('+1 VIE MAX  +10 ✦', 2.5);
       }
     }
   }

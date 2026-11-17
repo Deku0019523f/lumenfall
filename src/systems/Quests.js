@@ -25,7 +25,7 @@ export class Quests {
   #complete(q) {
     const g = this.game;
     this.active.delete(q.id); this.done.add(q.id);
-    g.player.shards += q.reward;
+    g.player.shards += q.reward; g.audio?.sfx('quest');
     g.say(`QUÊTE ACCOMPLIE  +${q.reward} ✦`, 3);
     g.fx.ring(g.player.x, g.player.y + 1, 0xffe08a, 4, 0.5);
     g.save();

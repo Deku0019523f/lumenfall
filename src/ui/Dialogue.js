@@ -31,7 +31,7 @@ export class Dialogue {
   update(dt, input) {
     if (!this.active) return;
     const full = this.lines[this.i].text;
-    if (this.chars < full.length) { this.chars = Math.min(full.length, this.chars + dt * 45); this.txt.textContent = full.slice(0, Math.floor(this.chars)); }
+    if (this.chars < full.length) { this.chars = Math.min(full.length, this.chars + dt * 45); const n = Math.floor(this.chars); if (n % 3 === 0 && n !== this.lastN) window.__lumenfall?.audio?.sfx('talk'); this.lastN = n; this.txt.textContent = full.slice(0, n); }
     if (input && (input.pressed.jump || input.pressed.attack)) this.advance();
   }
 }

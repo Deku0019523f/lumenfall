@@ -36,7 +36,7 @@ export class Shards {
       s.mesh.position.set(s.x, s.y, 2.8);
       s.mesh.material.opacity = 0.75 + Math.sin(s.age * 12) * 0.25;
       if ((d < 0.7 && s.age > 0.25) || s.age > 40 || s.y < -6) {
-        if (d < 0.9) { p.shards += s.value; g.fx.glow(s.x, s.y, 0xffe08a, 1.2, 0.2); g.hud?.shardPulse?.(); }
+        if (d < 0.9) { p.shards += s.value; g.audio?.sfx('shard'); g.fx.glow(s.x, s.y, 0xffe08a, 1.2, 0.2); g.hud?.shardPulse?.(); }
         g.scene.remove(s.mesh); s.mesh.material.dispose(); this.items.splice(i, 1);
       }
     }

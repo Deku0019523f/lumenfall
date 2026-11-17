@@ -20,7 +20,7 @@ function load(url, { pixel = false, wrap = false } = {}) {
 export async function loadAssets() {
   const A = { strips: {}, tiles: {}, bg: {}, ok: 0, missing: 0 };
   const jobs = [];
-  for (const [k, v] of Object.entries(STRIPS)) jobs.push(load(v.url).then((t) => (A.strips[k] = t ? { tex: t, frames: v.frames } : null)));
+  for (const [k, v] of Object.entries(STRIPS)) jobs.push(load(v.url, { pixel: v.pixel }).then((t) => (A.strips[k] = t ? { tex: t, frames: v.frames } : null)));
   for (const [k, v] of Object.entries(TILES)) jobs.push(load(v.url, { pixel: v.pixel }).then((t) => (A.tiles[k] = t)));
   for (const [k, v] of Object.entries(BACKGROUNDS)) jobs.push(load(v.url, { wrap: true }).then((t) => (A.bg[k] = t)));
   await Promise.all(jobs);

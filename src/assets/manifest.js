@@ -1,7 +1,17 @@
 // Bandes de sprites (frames côte à côte) générées par tools/build_assets.py.
 // Si un fichier est absent (ex. images pas encore envoyées sur GitHub), le jeu retombe sur des sprites dessinés par code.
 const B = './assets/';
+// Héros « Hooded Seeker » (Primitive Pixels, palette Void) : feet = point d'appui (px) ; fps de lecture
+export const SEEKER = {
+  idle:   { frames: 24, fw: 30, fh: 30, feet: [15, 28], fps: 10 },
+  run:    { frames: 10, fw: 30, fh: 30, feet: [17, 28], fps: 14 },
+  jump:   { frames: 28, fw: 30, fh: 30, feet: [16, 28], fps: 0 },
+  attack: { frames: 8,  fw: 90, fh: 50, feet: [16, 38], fps: 26 },
+  hurt:   { frames: 9,  fw: 55, fh: 80, feet: [26, 52], fps: 16 },
+  death:  { frames: 20, fw: 40, fh: 50, feet: [20, 48], fps: 12 },
+};
 export const STRIPS = {
+  ...Object.fromEntries(Object.entries(SEEKER).map(([k, v]) => ['seeker_' + k, { url: B + `characters/seeker_${k}.png`, frames: v.frames, pixel: true }])),
   hero_idle:   { url: B + 'characters/hero_idle.png', frames: 10 },
   hero_walk:   { url: B + 'characters/hero_walk.png', frames: 10 },
   hero_jump:   { url: B + 'characters/hero_jump.png', frames: 8 },
