@@ -13,21 +13,31 @@
     #menu { position: fixed; inset: 0; z-index: 50; display: flex; flex-direction: column; justify-content: center; overflow: hidden; box-sizing: border-box; font-family: 'Cormorant Garamond', 'Palatino Linotype', Palatino, Georgia, 'Times New Roman', serif; color: #e9e4d0; }
     #menu.pause { align-items: center; background: rgba(5,8,10,.86); }
     #menu.tree { background: radial-gradient(ellipse at 50% 30%, #1b2a2a, #070b0c 75%); }
-    #menu.start { padding: 0 8vw; background: linear-gradient(160deg, #0b1d1e 0%, #12302c 45%, #0a1214 100%); }
-    #menu.start::after, #menu.tree::after { content: ''; position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 0 18vmin 6vmin rgba(0,0,0,.85); }
-    /* faisceau de lumière en diagonale + poussières */
-    #menu .beam { position: absolute; top: -20%; left: 38%; width: 34%; height: 150%; transform: rotate(24deg); pointer-events: none;
-      background: linear-gradient(90deg, transparent, rgba(255,236,170,.17) 40%, rgba(255,246,210,.30) 55%, rgba(255,236,170,.08) 80%, transparent); filter: blur(10px); animation: beam 7s ease-in-out infinite alternate; }
-    @keyframes beam { from { opacity: .65; transform: rotate(24deg) translateX(-2%); } to { opacity: 1; transform: rotate(24deg) translateX(3%); } }
-    #menu .motes { position: absolute; inset: 0; pointer-events: none; opacity: .7;
-      background-image: radial-gradient(circle, rgba(255,240,190,.9) 0 1.5px, transparent 2.5px), radial-gradient(circle, rgba(255,240,190,.6) 0 1px, transparent 2px);
-      background-size: 140px 170px, 90px 110px; background-position: 0 0, 40px 60px; animation: motes 26s linear infinite; }
-    @keyframes motes { to { background-position: -60px -340px, -20px -220px; } }
-    #menu .title { position: relative; z-index: 1; margin-bottom: 4vh; }
-    #menu .title .orn { letter-spacing: 8px; font-size: 14px; color: #c9b676; opacity: .8; }
-    #menu h1 { margin: 0; font-weight: 700; font-style: italic; font-size: clamp(46px, 13vh, 96px); line-height: 1; letter-spacing: 3px;
-      background: linear-gradient(180deg, #fff6cf 10%, #e6c76d 55%, #9b7a2c); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 4px 10px rgba(0,0,0,.7)) drop-shadow(0 0 18px rgba(255,214,120,.35)); }
-    #menu .title .sub { font-size: clamp(14px, 3.4vh, 20px); letter-spacing: 6px; text-transform: uppercase; opacity: .75; margin-top: 4px; }
+    @font-face { font-family: 'EB Garamond'; font-weight: 400; src: url('./assets/fonts/eb-garamond-latin-400-normal.woff2') format('woff2'); font-display: swap; }
+    @font-face { font-family: 'EB Garamond'; font-weight: 500; src: url('./assets/fonts/eb-garamond-latin-500-normal.woff2') format('woff2'); font-display: swap; }
+    #menu { --u: calc(max(100vw, 179.14vh) / 2576); font-family: 'EB Garamond', 'Cormorant Garamond', 'Palatino Linotype', Palatino, Georgia, serif; }
+    #menu.start { padding: 0 8vw; background: linear-gradient(90deg, rgba(4,8,12,.78), rgba(4,8,12,.4) 65%, rgba(4,8,12,.1)), #07100f url('./assets/ui/menu_bg.jpg') left top / cover no-repeat; }
+    #menu.tree::after { content: ''; position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 0 18vmin 6vmin rgba(0,0,0,.85); }
+    #menu.start .beam { display: none; }
+    #menu.start .panel { align-self: flex-start; margin-left: 4vw; min-width: min(420px, 80vw); background: rgba(5,9,12,.55); padding: 14px 26px 18px; border-radius: 14px; backdrop-filter: blur(3px); }
+    /* menu d'accueil : mise en page calquée sur la maquette (unité --u = 1 px de l'image 2576 px de large) */
+    #menu.home { --y: min(0px, calc(100vh - var(--u) * 1200)); padding: 0; background: #07100f; justify-content: flex-start; }
+    #menu.home .stage { position: absolute; left: 0; top: var(--y); width: calc(var(--u) * 2576); height: calc(var(--u) * 1438); background: url('./assets/ui/menu_bg.jpg') 0 0 / 100% 100% no-repeat; }
+    #menu.home .logo { position: absolute; left: calc(var(--u) * 70); top: calc(var(--u) * 70); width: calc(var(--u) * 1130); height: auto; pointer-events: none; filter: drop-shadow(0 4px 14px rgba(0,0,0,.55)); }
+    #menu.home .list { position: absolute; left: calc(var(--u) * 358); top: calc(var(--u) * 526 + var(--y)); gap: 0; }
+    #menu.home .mi { height: calc(var(--u) * 98); padding: 0; gap: 0; position: relative; opacity: .92; color: #f3efe0; font-weight: 400; font-size: calc(var(--u) * 66); letter-spacing: calc(var(--u) * 2.8); text-shadow: 0 2px 10px rgba(0,0,0,.6); }
+    #menu.home .mi.first { height: calc(var(--u) * 144); align-items: flex-start; }
+    #menu.home .mi.first > span { display: flex; flex-direction: column; }
+    #menu.home .mi.first > span > b { display: block; font-weight: inherit; height: calc(var(--u) * 98); line-height: calc(var(--u) * 98); }
+    #menu.home .mi i { position: absolute; left: calc(var(--u) * -103); top: calc(var(--u) * 16); width: calc(var(--u) * 65); height: calc(var(--u) * 65); background: url('./assets/ui/cursor.png') center / contain no-repeat; font-size: 0; filter: drop-shadow(0 0 calc(var(--u) * 12) rgba(255,220,120,.7)); }
+    #menu.home .mi.first i { top: calc(var(--u) * 16); }
+    #menu.home .mi span { border-bottom: 0; padding: 0; }
+    #menu.home .mi small { display: block; margin-top: calc(var(--u) * -20); font-size: calc(var(--u) * 33); letter-spacing: calc(var(--u) * .6); opacity: .9; padding-bottom: calc(var(--u) * 6); border-bottom: calc(var(--u) * 3) solid transparent; width: calc(var(--u) * 487); box-sizing: border-box; white-space: nowrap; }
+    #menu.home .mi:not(.first).sel > span { border-bottom: calc(var(--u) * 3) solid #f1dfa0; padding-bottom: calc(var(--u) * 2); }
+    #menu.home .mi.sel small, #menu.home .mi:active small { border-bottom-color: #f1dfa0; }
+    #menu.home .mi:disabled { opacity: .35; }
+    #menu.home .mi.back { margin-top: 0; }
+    #menu.home .ver { right: calc(var(--u) * 42); bottom: calc(var(--u) * 26); font-size: calc(var(--u) * 36); opacity: .55; color: #d8d2bc; }
     #menu .ver { position: absolute; right: 14px; bottom: 10px; font-size: 12px; opacity: .4; z-index: 1; }
     #menu .list { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 2px; align-items: flex-start; }
     #menu.pause .list { align-items: stretch; min-width: min(360px, 80vw); }
