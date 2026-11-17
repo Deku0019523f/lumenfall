@@ -38,7 +38,7 @@ export class Menu {
   get open() { return this.screen !== null; }
 
   show(screen) {
-    this.screen = screen; this.el.style.display = 'flex'; this.el.className = ['start', 'help', 'chapters', 'options', 'credits'].includes(screen) ? 'start' : screen === 'skills' || screen === 'quests' ? 'tree' : 'pause';
+    this.screen = screen; this.el.style.display = 'flex'; this.el.className = ['start', 'help', 'chapters', 'options', 'credits'].includes(screen) ? (screen === 'start' ? 'start home' : 'start') : screen === 'skills' || screen === 'quests' ? 'tree' : 'pause';
     this.el.innerHTML = this[`#${screen}`]();
     this.el.scrollTop = 0;
     const first = this.el.querySelector('.mi:not(:disabled)'); if (first) first.classList.add('sel');
@@ -77,13 +77,13 @@ export class Menu {
   '#start'() {
     const h = this.h, has = h.hasSave();
     const ch = has ? CHAPTERS[Math.min(h.savedChapter(), CHAPTERS.length - 1)] : null;
-    const item = (act, label, extra = '', dis = false) => `<button data-act="${act}" class="mi" ${dis ? 'disabled' : ''}><i>❦</i><span>${label}${extra}</span></button>`;
-    return `<div class="beam"></div><div class="motes"></div>
-      <div class="title"><div class="orn">⁂ ✦ ⁂</div><h1>Lumenfall</h1><div class="sub">La flamme du Veilleur</div></div>
+    const item = (act, label, dis = false) => `<button data-act="${act}" class="mi" ${dis ? 'disabled' : ''}><i></i><span>${label}</span></button>`;
+    const first = has ? `<button data-act="continue" class="mi first"><i></i><span><b>Continuer</b><small>${esc(ch.subtitle)} — ${esc(ch.title)}</small></span></button>` : '';
+    return `<div class="stage"><img class="logo" src="./assets/ui/logo.png" alt="Lumenfall — La flamme du Veilleur"></div>
       <nav class="list">
-        ${has ? item('continue', 'Continuer', `<small>${esc(ch.subtitle)} — ${esc(ch.title)}</small>`) : ''}
+        ${first}
         ${item('new', 'Nouvelle partie')}
-        ${item('chapters', 'Chapitres', '', !has)}
+        ${item('chapters', 'Chapitres', !has)}
         ${item('options', 'Options')}
         ${item('help', 'Comment jouer')}
         ${item('credits', 'Crédits')}
