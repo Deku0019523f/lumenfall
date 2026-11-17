@@ -14,6 +14,7 @@ import { Menu } from './ui/Menu.js';
 import { World } from './world/World.js';
 import { CHAPTERS } from './levels/chapters.js';
 import { INTRO, ENDING, STORY } from './story/story.js';
+import { Music } from './audio/Music.js';
 import { loadAssets } from './assets/Assets.js';
 
 const SAVE_VERSION = 3;
@@ -29,8 +30,12 @@ async function boot() {
   const fx = new Effects(scene);
   const dialogue = new Dialogue();
 
+  const audio = new Music();
+  const unlockAudio = () => audio.unlock();
+  ['pointerdown', 'keydown', 'touchstart'].forEach((ev) => window.addEventListener(ev, unlockAudio, { passive: true }));
+
   const game = {
-    scene, camera, fx, input, assets, hud, dialogue,
+    audio, scene, camera, fx, input, assets, hud, dialogue,
     world: null, level: null, player: null, boss: null, miniBoss: null, inter: null, npcs: [],
     enemies: [], projectiles: [], enemyShots: [],
     collected: new Set(), bossDead: {}, seen: new Set(), unlocked: 0, transitioning: false, hitStop: 0,
@@ -54,17 +59,18 @@ async function boot() {
       if (e === game.boss) {
         game.bossDead[idx] = true; game.quests.progress('boss'); game.hitStop = 0.35; camera.shake(0.7, 0.6); camera.punch(0.12);
         hud.say('BOSS VAINCU', 3); game.save();
-        setTimeout(() => dialogue.start(STORY[idx].outro, endChapter), 2200);
+        setTimeout(() => dialogue.start(STORY[idx].outro, () => { game.portals.openExit(e.home.x, e.home.y); hud.say('Un portail s\'ouvre…', 3); }), 2200);
       } else if (e.mini) {
         game.bossDead['m' + idx] = true; game.quests.progress('mini'); camera.shake(0.5, 0.4);
         hud.say(`${e.name.toUpperCase()} VAINCU`, 3); game.save();
       } else game.quests.progress('kill');
     },
   };
+  game.onExitPortal = () => endChapter();
   game.world = new World(game);
   game.shards = new Shards(game);
   game.quests = new Quests(game);
-  window.__lumenfall = game; // accès console (débogage / tests)
+  window.__lumenfall = game;  // accès console (débogage / tests)
 
   game.player = new Player(scene, 0, 0, assets);
   const P = game.player;
@@ -95,7 +101,7 @@ async function boot() {
     game.unlocked = Math.max(game.unlocked, next);
     game.save({ chapter: next, spawn: null });
     hud.fade(true);
-    setTimeout(() => { enterChapter(next, null); game.transitioning = false; hud.fade(false); }, 900);
+    setTimeout(() => { enterChapter(next, null); game.portals.arrive(); game.transitioning = false; hud.fade(false); }, 900);
   }
 
   // Charge un chapitre, affiche le titre puis la scène d'arrivée (une seule fois)
@@ -144,7 +150,7 @@ async function boot() {
   document.getElementById('menuBtn').addEventListener('click', togglePause);
   window.addEventListener('keydown', (e) => { if (e.code === 'Escape') togglePause(); });
   function togglePause() {
-    if (menu.screen === 'start' || menu.screen === 'help' || menu.screen === 'chapters') return;
+    if (['start', 'help', 'chapters', 'credits'].includes(menu.screen) || (menu.screen === 'options' && menu.origin === 'start')) return;
     if (menu.open) { menu.hide(); return; }
     if (document.body.dataset.started !== '1' || dialogue.active || game.transitioning) return;
     menu.show('pausemenu');
@@ -177,6 +183,12 @@ async function boot() {
     }
   }
 
+  function pickTrack() {
+    if (document.body.dataset.started !== '1' || (menu.open && ['start', 'help', 'chapters', 'credits'].includes(menu.screen)) || (menu.screen === 'options' && menu.origin === 'start')) { audio.setTrack('menu'); return; }
+    const bo = game.boss?.active && !game.boss.dead, mi = game.miniBoss?.active && !game.miniBoss.dead;
+    audio.setTrack(bo ? 'boss' : mi ? 'mini' : 'ch' + Math.max(0, game.world.index));
+  }
+
   let last = performance.now();
   function frame(now) {
     const dt = Math.min((now - last) / 1000, 1 / 30); // plafonné pour éviter les sauts après un lag
@@ -190,6 +202,8 @@ async function boot() {
     if (started && !blocked && !frozen) {
       game.player.update(input, game, dt);
       for (const e of game.enemies) e.update(game, dt);
+      game.hazards?.update(dt);
+      game.portals?.update(dt);
       game.enemies = game.enemies.filter((e) => !e.dead);
       updateEnemyShots(dt);
       game.inter.update(dt);
@@ -206,6 +220,7 @@ async function boot() {
       }
     }
     game.world.update(dt);
+    pickTrack();
     renderer.render(scene, camera.cam);
     if (!frozen) input.endFrame(); // les appuis ne se perdent pas pendant le hit-stop
     requestAnimationFrame(frame);
