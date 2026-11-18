@@ -24,6 +24,25 @@ export const STRIPS = {
   portal_red:    { url: B + 'effects/portal_red.png', frames: 21, pixel: true },
   portal_yellow: { url: B + 'effects/portal_yellow.png', frames: 21, pixel: true },
   portal_blue:   { url: B + 'effects/portal_blue.png', frames: 21, pixel: true },
+  // Animation Pack, coffres et flammes (tools/build_extra_assets.py)
+  fx_energyball:   { url: B + 'effects/fx_energyball.png', frames: 9, pixel: true },
+  fx_energyimpact: { url: B + 'effects/fx_energyimpact.png', frames: 8, pixel: true },
+  fx_hit:          { url: B + 'effects/fx_hit.png', frames: 7, pixel: true },
+  fx_explosion:    { url: B + 'effects/fx_explosion.png', frames: 8, pixel: true },
+  fx_burn:         { url: B + 'effects/fx_burn.png', frames: 10, pixel: true },
+  fx_fireline:     { url: B + 'effects/fx_fireline.png', frames: 7, pixel: true },
+  fx_shine:        { url: B + 'effects/fx_shine.png', frames: 6, pixel: true },
+  fx_iceburst:     { url: B + 'effects/fx_iceburst.png', frames: 7, pixel: true },
+  fx_iceball:      { url: B + 'effects/fx_iceball.png', frames: 4, pixel: true },
+  fx_thunder:      { url: B + 'effects/fx_thunder.png', frames: 4, pixel: true },
+  fx_crystal:      { url: B + 'effects/fx_crystal.png', frames: 6, pixel: true },
+  fx_mirror:       { url: B + 'effects/fx_mirror.png', frames: 5, pixel: true },
+  fx_beam:         { url: B + 'effects/fx_beam.png', frames: 7, pixel: true },
+  fx_flame:        { url: B + 'effects/fx_flame.png', frames: 35, pixel: true },
+  chest_wood:      { url: B + 'effects/chest_wood.png', frames: 7, pixel: true },
+  chest_iron:      { url: B + 'effects/chest_iron.png', frames: 7, pixel: true },
+  chest_silver:    { url: B + 'effects/chest_silver.png', frames: 7, pixel: true },
+  chest_gold:      { url: B + 'effects/chest_gold.png', frames: 7, pixel: true },
   plant1:      { url: B + 'effects/plant1.png', frames: 30 },
   plant4:      { url: B + 'effects/plant4.png', frames: 20 },
   blueflower:  { url: B + 'effects/blueflower.png', frames: 20 },
@@ -36,4 +55,10 @@ export const TILES = {
 };
 export const BACKGROUNDS = {
   windrise: { url: B + 'backgrounds/windrise.jpg' },
+  forest:   { url: B + 'backgrounds/forest.jpg' },
+};
+// Atlas de décors (tools/build_decor.py) : rectangles dans assets/decor.js
+export const DECOR_ATLAS = {
+  mossy:   { url: B + 'decor/mossy.png', pixel: false },
+  village: { url: B + 'decor/village.png', pixel: true },
 };
