@@ -1,4 +1,4 @@
-# Intégration des packs d'assets (Bot Wheel, Plants Animated, Cave Maaot)
+# Intégration des packs d'assets (Bot Wheel, Plants Animated, Cave Maaot, ennemis)
 
 ## Bot Wheel → avatar de L'Ombre Éternelle (boss final, Royaume des Ombres)
 Feuilles verticales, cellules 117×26 px (corps dans les 39 px de gauche, FX qui débordent).
@@ -30,3 +30,18 @@ Aucune licence trouvée dans les packs. Vérifier les conditions avant de publie
 
 ## Ordre des régions (à corriger dans monde.md et la carte)
 Selon l'histoire : Plaines, Forêt, Ruines, Cendre, Champignons, Citadelle (dernier refuge des anciens Veilleurs), Ombres.
+
+## Ennemis supplémentaires (packs Dark Fantasy Enemies, Monsters Creatures Fantasy 2, Fire Worm)
+`tools/build_bat.py` (chauve-souris 64 px) et `tools/build_monsters.py` (copie les bandes dans assets/enemies/, pixel:true).
+
+| Ennemi | Cellule | Bandes (images) | Usage prévu |
+|---|---|---|---|
+| Chauve-souris (DFE) | 64 | fly 9, dive 8, hurt 5, die 12 | **Branchée** : Flyer utilise bat_fly si présent, sinon spore |
+| Rat | 70 | idle 10, run 8, bite 12, hurt 3, death 6 | **Branché** : Crawler variant 'rat' (rat_run), pas encore assigné à un chapitre |
+| Ver de feu | 90 | idle 9, walk 9, attack 16, hit 3, death 8 | Cendre : ennemi qui crache la boule de feu |
+| Boule de feu | 46 | move 6, explosion 7 | projectile du ver de feu |
+| Mimic | 146 | closed, opening 6, walk 6, attack 14, death 6… | coffre piégé (Ruines/Citadelle) |
+| Slime (MCF2) | 156 | idle 14, walk 6, attack 19, hurt 3, death 11 | variante de slime (Champignons) |
+| Chauve-souris 2 (MCF2) | 87 | fly 11, attack 11 | variante Ruines/Ombres |
+
+Un fichier absent n'est pas bloquant : le jeu retombe sur les sprites existants. Licences non vérifiées (voir plus haut).
