@@ -27,7 +27,7 @@ async function boot() {
   const camera = new GameCamera();
   const input = new Input();
   const hud = new HUD();
-  const fx = new Effects(scene);
+  const fx = new Effects(scene, assets);
   const dialogue = new Dialogue();
 
   const audio = new Music();
@@ -179,6 +179,7 @@ async function boot() {
       const p = game.player;
       let dead = s.life <= 0 || game.level.isSolid(Math.floor(s.x), Math.floor(s.y));
       if (!p.dead && aabb({ x: s.x, y: s.y - s.h / 2, w: s.w, h: s.h }, p)) { p.damage(1, Math.sign(s.vx) * -1 || 1, game); dead = true; }
+      if (dead && s.life > 0) fx.sprite('fx_hit', s.x, s.y, { w: 1.8, fps: 28, color: s.mesh.material.color.getHex() }); // impact d'un tir ennemi
       if (dead) { scene.remove(s.mesh); if (s.anim) s.anim.dispose(); else { s.mesh.geometry.dispose(); s.mesh.material.dispose(); } game.enemyShots.splice(i, 1); }
     }
   }
