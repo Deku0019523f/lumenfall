@@ -12,7 +12,7 @@ export class Hazards {
     floor.position.set(x, y + 0.15, 2.7); floor.scale.set(w * 1.3, 0.5, 1);
     col.position.set(x, y + h / 2, 2.8); col.scale.set(w, 0.1, 1);
     g.scene.add(floor); g.scene.add(col);
-    this.items.push({ x, y, w, h, warn, life, t: 0, floor, col, fired: false });
+    this.items.push({ x, y, w, h, color, warn, life, t: 0, floor, col, fired: false });
   }
 
   update(dt) {
@@ -25,7 +25,9 @@ export class Hazards {
         it.floor.material.opacity = 0.35 + 0.5 * Math.abs(Math.sin(k * 14));
         it.floor.scale.set(it.w * (1.1 + k * 0.6), 0.4 + k * 0.3, 1);
       } else {
-        if (!it.fired) { it.fired = true; g.camera.shake(0.18, 0.12); g.fx.sparks(it.x, it.y + 0.3, 0xffb07a, 6, 8, Math.PI / 2, 1.2); }
+        if (!it.fired) { it.fired = true; g.camera.shake(0.18, 0.12); g.fx.sparks(it.x, it.y + 0.3, 0xffb07a, 6, 8, Math.PI / 2, 1.2);
+          g.fx.sprite('fx_thunder', it.x, it.y + it.h / 2, { w: Math.max(1.6, it.w * 1.5), h: it.h * 1.15, fps: 14, color: it.color });
+          g.fx.sprite('fx_burn', it.x, it.y + 0.8, { w: it.w * 2.2, fps: 16, color: it.color }); }
         const a = (it.t - it.warn) / it.life, up = Math.min(1, a * 5);
         it.col.scale.set(it.w * (1 - a * 0.4), it.h * up, 1); it.col.position.y = it.y + it.h * up / 2;
         it.col.material.opacity = 1 - Math.max(0, a - 0.5) * 2; it.floor.material.opacity = 0.5 * (1 - a);
