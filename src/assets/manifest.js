@@ -10,7 +10,20 @@ export const SEEKER = {
   hurt:   { frames: 9,  fw: 55, fh: 80, feet: [26, 52], fps: 16 },
   death:  { frames: 20, fw: 40, fh: 50, feet: [20, 48], fps: 12 },
 };
+// Ennemis « bandes » en pixel art : id_animation → { frames }. Fichiers : assets/enemies/<id>_<animation>.png
+// (générés par tools/build_bat.py, build_monsters.py ; voir bestiaire.md). Un fichier absent → repli (voir Bestiary.js).
+const ENEMY_SHEETS = {
+  rat:      { idle: 10, run: 8, bite: 12, hurt: 3, death: 6 },
+  bat:      { fly: 9, dive: 8, hurt: 5, die: 12 },
+  bat2:     { fly: 11, attack: 11, hurt: 3, death: 4 },
+  worm:     { idle: 9, walk: 9, attack: 16, hurt: 3, death: 8 },
+  fireball: { move: 6, boom: 7 },
+  mimic:    { closed: 1, opening: 6, walk: 6, attack: 14, hurt: 3, death: 6 },
+};
+const enemyStrips = Object.fromEntries(Object.entries(ENEMY_SHEETS).flatMap(([id, anims]) =>
+  Object.entries(anims).map(([a, frames]) => [`${id}_${a}`, { url: B + `enemies/${id}_${a}.png`, frames, pixel: true }])));
 export const STRIPS = {
+  ...enemyStrips,
   ...Object.fromEntries(Object.entries(SEEKER).map(([k, v]) => ['seeker_' + k, { url: B + `characters/seeker_${k}.png`, frames: v.frames, pixel: true }])),
   hero_idle:   { url: B + 'characters/hero_idle.png', frames: 10 },
   hero_walk:   { url: B + 'characters/hero_walk.png', frames: 10 },
@@ -21,11 +34,6 @@ export const STRIPS = {
   spore:        { url: B + 'enemies/spore.png', frames: 20 },
   boss_poison:  { url: B + 'enemies/boss_poison.png', frames: 15 },
   boss_wind:    { url: B + 'enemies/boss_wind.png', frames: 15 },
-  bat_fly:      { url: B + 'enemies/bat_fly.png', frames: 9, pixel: true },
-  rat_run:      { url: B + 'enemies/rat_run.png', frames: 8, pixel: true },
-  worm_walk:    { url: B + 'enemies/worm_walk.png', frames: 9, pixel: true },
-  fireball_move:{ url: B + 'enemies/fireball_move.png', frames: 6, pixel: true },
-  mimic_walk:   { url: B + 'enemies/mimic_walk.png', frames: 6, pixel: true },
   portal_red:    { url: B + 'effects/portal_red.png', frames: 21, pixel: true },
   portal_yellow: { url: B + 'effects/portal_yellow.png', frames: 21, pixel: true },
   portal_blue:   { url: B + 'effects/portal_blue.png', frames: 21, pixel: true },

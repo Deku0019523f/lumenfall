@@ -13,6 +13,7 @@ FILES = {  # sortie : (fichier source, taille de cellule)
   'mimic_closed': (J(mc, 'Mimic/Idle_closed.png'), 146), 'mimic_opening': (J(mc, 'Mimic/opening.png'), 146),
   'mimic_walk': (J(mc, 'Mimic/walk.png'), 146), 'mimic_attack': (J(mc, 'Mimic/attack_1.png'), 146), 'mimic_death': (J(mc, 'Mimic/death.png'), 146),
   'bat2_fly': (J(mc, 'Bat/fly.png'), 87), 'bat2_attack': (J(mc, 'Bat/attack.png'), 87),
+  'bat2_hurt': (J(mc, 'Bat/hurt.png'), 87), 'bat2_death': (J(mc, 'Bat/death.png'), 87), 'mimic_hurt': (J(mc, 'Mimic/hurt.png'), 146),
   'worm_idle': (J(fw, 'Sprites/Worm/Idle.png'), 90), 'worm_walk': (J(fw, 'Sprites/Worm/Walk.png'), 90), 'worm_attack': (J(fw, 'Sprites/Worm/Attack.png'), 90),
   'worm_hurt': (J(fw, 'Sprites/Worm/Get Hit.png'), 90), 'worm_death': (J(fw, 'Sprites/Worm/Death.png'), 90),
   'fireball_move': (J(fw, 'Sprites/Fire Ball/Move.png'), 46), 'fireball_boom': (J(fw, 'Sprites/Fire Ball/Explosion.png'), 46),
