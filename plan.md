@@ -8,7 +8,7 @@ Metroidvania 2D d'action-aventure (Three.js, caméra orthographique), jouable su
 - Mode : solo, exploration, progression **par chapitres** (une nouvelle carte par chapitre), boss difficiles à phases
 
 ## Histoire (version adaptée au jeu)
-Source : « LUMENFALL — La Flamme du Veilleur.txt » (histoire complète, saison 1 + suites saison 2). Le jeu actuel en raconte le **début** : l'intro et les 3 premiers chapitres. Le reste (7 régions, choix final, saison 2) n'est pas encore dans le jeu.
+Sources : dossier `histoires/`. **Saison 1** = `saison-1/00-lumenfall-la-flamme-du-veilleur.txt` (histoire de base) + **trois suites** selon le choix final du joueur (`suite-1-l-heritier-de-la-flamme`, `suite-2-le-monde-sans-flamme`, `suite-3-le-dernier-serment`). **Saison 2** (« Les Échos de l'Origine ») : seul le prologue est écrit. Le jeu actuel raconte le **début** de la saison 1 : l'intro et les 3 premiers chapitres. Le reste (7 régions, choix final, suites, saison 2) n'est pas encore dans le jeu.
 
 **Lore de base** : la *Flamme Originelle* protégeait le monde de Lumenfall (équilibre entre humains, esprits et créatures de la nature). L'*Ombre Éternelle* a brisé son sceau ; les anciens Veilleurs se sont sacrifiés pour fragmenter la Flamme en **sept fragments** dispersés dans le monde, puis ont disparu de l'histoire. Des siècles plus tard, un enfant d'origine inconnue (voit les esprits, entend les arbres) reçoit une **lanterne** où s'allume une flamme violette. Il est le dernier héritier, le nouveau Veilleur. Son guide est **Lueur**, un petit esprit lumineux.
 
@@ -26,15 +26,15 @@ Source : « LUMENFALL — La Flamme du Veilleur.txt » (histoire complète, sais
 
 **Les 7 régions de l'histoire complète** (pour la suite) : 1 Plaines du Vent · 2 Forêt des Murmures · 3 Ruines Englouties · 4 Montagnes de Cendre · 5 Royaume des Champignons · 6 Citadelle Oubliée · 7 Royaume des Ombres. Chacune : un gardien, des secrets, des ennemis, un fragment.
 
-**Fin de l'histoire** : l'Ombre Éternelle est l'ancien premier Veilleur, créateur de la Flamme, consumé par son pouvoir. Choix final du joueur : restaurer la Flamme (devenir le Veilleur éternel → *L'Héritier de la Flamme*), la détruire (*Le Monde sans Flamme*) ou fusionner avec l'Ombre (*Le Dernier Serment*). La saison 2 reprend ce choix (prologue « Les Échos de l'Origine »). À prévoir plus tard : sauvegarder le choix du joueur.
+**Fin de la saison 1** : l'Ombre Éternelle est l'ancien premier Veilleur, créateur de la Flamme, consumé par son pouvoir. Choix final du joueur : restaurer la Flamme (devenir le Veilleur éternel → suite *L'Héritier de la Flamme*), la détruire (*Le Monde sans Flamme*) ou fusionner avec l'Ombre (*Le Dernier Serment*). Le fichier de suite correspondant au choix raconte la fin. La saison 2 (prologue « Les Échos de l'Origine ») vient après. À prévoir plus tard : sauvegarder le choix du joueur.
 
-À faire côté textes : réécrire `src/story/story.js` (INTRO, ENDING, arrivées, PNJ, intros/outros de boss) d'après le tableau ci-dessus ; les quêtes, leurs identifiants et leurs récompenses ne changent pas, seul le mot « éclats » devient « étincelles ».
+Textes du jeu : `src/story/story.js` (INTRO, ENDING, arrivées, PNJ, intros/outros de boss) est **adapté au tableau ci-dessus** (v0.4.2) ; les quêtes, leurs identifiants et leurs récompenses n'ont pas changé, seul le mot « éclats » est devenu « étincelles ».
 
-## Dialogues animés (à faire)
+## Dialogues animés (fait, v0.4.3)
 - **Voix « blips »** : un petit son par lettre, propre à chaque personnage, généré en Web Audio (aucun fichier). Module `src/audio/Voice.js` : tableau `PROFILES` (hauteur, forme d'onde, durée, couleur du nom), une voix déduite du nom pour tout personnage inconnu. La hauteur varie selon la lettre (voyelles plus aiguës) ; un blip toutes les 2 lettres ; pas de blip sur les espaces ni la ponctuation. Volume = volume « effets sonores » des options.
   - Lueur : aiguë, cristalline · Le Veilleur : médium doux · Mousse l'Ancien : grave et lente · Zéphyr : légère, rapide, vibrato · Mirelle : douce · Narration : discrète · Boss : graves ou soufflées, texte tremblant (Gardienne : carrée grave ; Souffle Ancien : souffle filtré ; Roi Gélatine : glissando mou).
 - **Écriture plus vivante** (`src/ui/Dialogue.js`) : pauses après `.` `,` `!` `?` `…` ; lettres qui apparaissent avec un petit effet (rebond/fondu) ; balises dans les textes : `*mot*` = mot en or lumineux (Flamme, Ombre, noms clés), `~texte~` = texte tremblant (boss, cris) ; lignes entre parenthèses = voix lointaine (italique, murmurée) ; nom du personnage et cadre de la boîte dans la couleur de sa voix ; toucher la boîte pendant l'écriture = tout afficher, puis ▼ pour passer à la suite. Mise en page calculée dès le début de la ligne pour que les mots ne sautent pas de ligne en cours d'écriture.
-- État : `Voice.js` écrit en local, **pas encore poussé** ; `Dialogue.js` et `story.js` pas encore modifiés.
+- État : **fait (v0.4.3)** — `src/audio/Voice.js` (profils de voix) et `src/ui/Dialogue.js` (écriture animée) sont dans le jeu ; `story.js` est déjà adapté à l'histoire (v0.4.2). Mots clés dorés automatiquement : Flamme, Ombre, fragments, étincelles. Ajouter un personnage = une ligne dans `PROFILES`.
 
 ## Chapitres (une carte longue, un thème, un PNJ, un mini-boss, un boss chacun)
 | # | Titre | Carte | Ennemis | PNJ | Mini-boss | Boss | Orbe | Portail |
@@ -64,6 +64,7 @@ lumenfall/
 ├── vite.config.js             # publicDir:false (assets copié par tools/copy-assets.mjs)
 ├── capacitor.config.json      # appId com.premium225.lumenfall
 ├── RAPPORT.md / plan.md       # mémoire du projet
+├── histoires/                 # saison-1/ (histoire de base + 3 suites selon le choix final) · saison-2/ (prologue)
 ├── tools/
 │   ├── build_assets.py        # zips bruts → bandes de sprites + tilesets 3x3 (assets/)
 │   ├── make_maps.py           # génère src/levels/chapterN.js (cartes ASCII)
@@ -89,10 +90,10 @@ lumenfall/
 │   │   └── chapter1.js … chapter3.js   # cartes générées, lignes en RLE (ne pas éditer à la main)
 │   ├── objects/ (Interactables : S/D/W/C ; Shards : étincelles ✦ ; Npc : PNJ 'N' ; Portals : paires T/t, sortie de chapitre, arrivée)
 │   ├── story/story.js         # textes FR : intro, épilogue, PNJ, quêtes, arrivées, intros/outros de boss
-│   ├── ui/ (Input, HUD [vie, énergie, ✦, quête], Dialogue [machine à écrire → version animée prévue], Menu [accueil calqué sur la maquette, options, crédits, pause, arbre de compétences SVG, quêtes])
+│   ├── ui/ (Input, HUD [vie, énergie, ✦, quête], Dialogue [machine à écrire animée, voix blips, pauses, mots dorés], Menu [accueil calqué sur la maquette, options, crédits, pause, arbre de compétences SVG, quêtes])
 │   ├── audio/
 │   │   ├── Music.js           # musique procédurale (Web Audio) par chapitre/boss/menu + effets sonores, volumes
-│   │   └── Voice.js           # (prévu) voix « blips » des dialogues, profils par personnage
+│   │   └── Voice.js           # voix « blips » des dialogues, profils par personnage (PROFILES)
 │   └── systems/ (Effects [additifs : croissant, étincelles, anneaux, chiffres], Skills, Quests, SaveSystem, Hazards [zones de danger des boss])
 └── assets/                    # images générées par tools/build_assets.py (≈ 2,5 Mo) — à ajouter à la main sur GitHub
     ├── characters/ seeker_{idle,run,jump,attack,hurt,death}.png (Hooded Seeker Lite) + hero_* (ancien sorcier, repli)
@@ -125,7 +126,7 @@ lumenfall/
 9. Sauvegarde et progression — fait (chapitre, point de sauvegarde, vie max, capacités, coffres et portails découverts)
 10. Optimisation et export APK — à faire
 11. Musique et sons — fait (procédural) ; menu/arbre refaits — fait (v0.4.0) ; portails — fait
-12. Menu d'accueil calqué sur la maquette — fait (v0.4.1 ; images et polices à ajouter à la main dans assets/ui et assets/fonts)
-13. Histoire adaptée (story.js) + renommage éclats → étincelles — à faire
-14. Dialogues animés (voix blips, écriture vivante, balises `*or*` `~tremble~`) — à faire
-15. Suite de l'histoire : régions 2 à 7, choix final, saison 2 — à planifier
+12. Menu d'accueil calqué sur la maquette — fait (v0.4.1)
+13. Histoire adaptée (story.js) + renommage éclats → étincelles — fait (v0.4.2)
+14. Dialogues animés (voix blips, écriture vivante, balises `*or*` `~tremble~`) — fait (v0.4.3)
+15. Suite de l'histoire : régions 2 à 7, choix final (3 suites de la saison 1), puis saison 2 — à planifier
