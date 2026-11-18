@@ -23,7 +23,7 @@ export function updateMovement(p, input, level, dt, game) {
     p.attackT = 0; p.hitSet.clear();
     p.dashT = m.dashTime; p.dashCd = st.dashCd; p.invuln = Math.max(p.invuln, m.dashTime + (st.ghost ? 0.25 : 0.05));
     p.dashHit = new Set();
-    game?.fx.puff(p.x, p.y, 5); game?.camera.punch(0.015); game?.audio?.sfx('dash');
+    game?.fx.puff(p.x, p.y, 5); game?.fx.sprite('fx_shine', p.x, p.y + 0.9, { w: 2, fps: 24 }); game?.camera.punch(0.015); game?.audio?.sfx('dash');
     p.dashDir = input.axisX !== 0 ? Math.sign(input.axisX) : p.facing;
     p.facing = p.dashDir; p.vy = 0;
   }

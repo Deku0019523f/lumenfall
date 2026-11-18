@@ -8,7 +8,7 @@ export const CHAPTERS = [
   {
     title: 'Les Racines Mousseuses', subtitle: 'Chapitre 1',
     map: map1,
-    theme: { tiles: 'mossy', solid: 0x1a2b22, platform: 0x4a8a5a, spike: '#9be36a', bands: [0x0f1c16, 0x14281e, 0x1b3626], bg: { image: 'windrise', tint: 0x3d6a52 } },
+    theme: { tiles: 'mossy', solid: 0x1a2b22, platform: 0x4a8a5a, spike: '#9be36a', bands: [0x0f1c16, 0x14281e, 0x1b3626], bg: { image: 'forest', tint: 0x4a6a5c } },
     crawler: 'green', hpMul: 1, portal: 'blue',
     boss: { name: 'La Gardienne des Racines', strip: 'boss_poison', spriteH: 3.9, hp: 48, w: 2.6, h: 2.8, color: '#2f6b3a', moves: ['roots', 'volley', 'summon', 'charge'] },
     mini: { name: 'Le Gardien du Pont', strip: 'slime_green', spriteH: 2.6, hp: 20, w: 2.0, h: 1.8, color: '#2f6b3a', tint: 0xb6ff8a, shards: 25, moves: ['charge', 'roots'] },
