@@ -5,8 +5,8 @@ import { spawnShot } from './shots.js';
 
 // Cracheur : immobile, vise le joueur et tire un projectile après un temps de charge.
 export class Spitter extends Enemy {
-  constructor(game, x, y, hpMul = 1) {
-    super(game, x, y, { w: 1.1, h: 0.95, hp: Math.round(3 * hpMul), color: '#6a3a9a', skin: { strip: 'slime_green', h: 1.05, fps: 8, tint: 0xc08aff } });
+  constructor(game, x, y, hpMul = 1, cfg = {}) {
+    super(game, x, y, { w: 1.1, h: 0.95, hp: Math.round(3 * hpMul), color: '#6a3a9a', skin: cfg.skin ?? { strip: 'slime_green', h: 1.05, fps: 8, tint: 0xc08aff } });
     this.cd = 1 + Math.random(); this.windup = 0; this.baseTint = 0xc08aff;
   }
   ai(game, dt) {
