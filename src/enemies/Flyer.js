@@ -1,9 +1,9 @@
 import { Enemy } from './Enemy.js';
 
-// Volant (spore) : plane en sinusoïde, repère le joueur, plonge, puis remonte.
+// Volant (chauve-souris si bat_fly est chargé, sinon spore) : plane en sinusoïde, repère le joueur, plonge, puis remonte.
 export class Flyer extends Enemy {
   constructor(game, x, y, hpMul = 1) {
-    super(game, x, y, { w: 1.0, h: 0.9, hp: Math.round(2 * hpMul), color: '#6b2f5a', scale: 1.4, gravity: false, skin: { strip: 'spore', h: 1.1, fps: 12 } });
+    super(game, x, y, { w: 1.0, h: 0.9, hp: Math.round(2 * hpMul), color: '#6b2f5a', scale: 1.4, gravity: false, skin: game.assets?.strips?.bat_fly ? { strip: 'bat_fly', h: 1.9, fps: 12 } : { strip: 'spore', h: 1.1, fps: 12 } });
     this.homeY = y + 1.5; this.t = Math.random() * 6; this.mode = 'hover'; this.modeT = 0; this.y = this.homeY;
   }
   ai(game, dt) {
