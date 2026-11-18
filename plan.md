@@ -5,7 +5,7 @@ Metroidvania 2D d'action-aventure (Three.js, caméra orthographique), jouable su
 ## Choix de conception
 - Style : 2D dessiné/pixel mêlés (packs d'assets fournis : héros Hooded Seeker, slimes, plantes, tilesets Mossy / Mondstadt / Village, portails Pixel Portal)
 - Univers : fantasy original
-- Mode : solo, exploration, progression **par chapitres** (une nouvelle carte par chapitre), boss difficiles à phases
+- Mode : solo, **exploration d'un monde interconnecté** (style Hollow Knight : une grande carte de zones reliées, retours en arrière, raccourcis, secrets) — **pas de parcours linéaire à la Mario** ; progression par zones/chapitres d'histoire, boss difficiles à phases
 
 ## Histoire (version adaptée au jeu)
 Sources : dossier `histoires/`. **Saison 1** = `saison-1/00-lumenfall-la-flamme-du-veilleur.txt` (histoire de base) + **trois suites** selon le choix final du joueur (`suite-1-l-heritier-de-la-flamme`, `suite-2-le-monde-sans-flamme`, `suite-3-le-dernier-serment`). **Saison 2** (« Les Échos de l'Origine ») : seul le prologue est écrit. Le jeu actuel raconte le **début** de la saison 1 : l'intro et les 3 premiers chapitres. Le reste (7 régions, choix final, suites, saison 2) n'est pas encore dans le jeu.
@@ -36,7 +36,20 @@ Textes du jeu : `src/story/story.js` (INTRO, ENDING, arrivées, PNJ, intros/outr
 - **Écriture plus vivante** (`src/ui/Dialogue.js`) : pauses après `.` `,` `!` `?` `…` ; lettres qui apparaissent avec un petit effet (rebond/fondu) ; balises dans les textes : `*mot*` = mot en or lumineux (Flamme, Ombre, noms clés), `~texte~` = texte tremblant (boss, cris) ; lignes entre parenthèses = voix lointaine (italique, murmurée) ; nom du personnage et cadre de la boîte dans la couleur de sa voix ; toucher la boîte pendant l'écriture = tout afficher, puis ▼ pour passer à la suite. Mise en page calculée dès le début de la ligne pour que les mots ne sautent pas de ligne en cours d'écriture.
 - État : **fait (v0.4.3)** — `src/audio/Voice.js` (profils de voix) et `src/ui/Dialogue.js` (écriture animée) sont dans le jeu ; `story.js` est déjà adapté à l'histoire (v0.4.2). Mots clés dorés automatiquement : Flamme, Ombre, fragments, étincelles. Ajouter un personnage = une ligne dans `PROFILES`.
 
-## Chapitres (une carte longue, un thème, un PNJ, un mini-boss, un boss chacun)
+## Structure du monde (décidé : carte interconnectée, style Hollow Knight)
+Référence : les cartes de Hallownest fournies par l'utilisateur (zones colorées reliées entre elles, un seul grand monde). **Le jeu n'est plus conçu comme une suite de niveaux linéaires à la Mario** : les niveaux actuels deviennent des **zones** d'un même monde.
+- **Zones** : chaque zone a son thème (tileset, fond, musique, ennemis, PNJ, mini-boss, boss gardien d'un fragment). Zones prévues : Racines Mousseuses (départ, hors des 7 régions), Plaines du Vent, Village Oublié (refuge, **hub** avec PNJ), puis Forêt des Murmures, Ruines Englouties, Montagnes de Cendre, Royaume des Champignons, Citadelle Oubliée, Royaume des Ombres.
+- **Liaisons** : les zones se touchent par des passages (portes, puits, grottes, ponts). Plusieurs routes entre deux zones, dont des **raccourcis à débloquer** (porte qui ne s'ouvre que d'un côté, ascenseur, portail T↔t déjà existant).
+- **Verrous par capacités** (le cœur du metroidvania) : double saut, saut mural, dash aérien, puis pouvoirs de la lanterne issus de l'histoire (éclairer les passages cachés, réveiller les anciens mécanismes, repousser l'Ombre, absorber un fragment, parler aux esprits). Un passage visible mais fermé donne envie de revenir. Règle actuelle conservée : la **route principale** reste faisable sans capacité optionnelle ; les capacités ouvrent des raccourcis, coffres et zones secrètes.
+- **Points de repos** : cristaux de sauvegarde (déjà là) = point de réapparition + soin ; ils servent aussi de repères sur la carte.
+- **Carte du monde** (écran du menu) : se dévoile pièce par pièce quand on explore, couleur par zone, marqueurs de cristaux, coffres vus, portes verrouillées, position du joueur — comme les cartes de Hallownest.
+- **Exploration non linéaire** : embranchements, culs-de-sac avec coffre, salles secrètes, mini-boss optionnels, PNJ à retrouver dans plusieurs zones, quêtes qui envoient d'une zone à l'autre.
+- **Pièces et caméra** : une zone est découpée en **salles** (écrans reliés par des sorties) ; la caméra reste fluide dans une salle et une transition courte (fondu ou glissement) change de salle. Les trois grandes cartes actuelles (≈ 600 à 900 tuiles de long) seront redécoupées en salles avec embranchements verticaux.
+
+**Étapes de mise en œuvre** (à valider avant de coder) : A) modèle de données : `src/levels/world.js` (zones, salles, sorties, verrous) + `tools/make_maps.py` pour générer des salles avec sorties ; B) charger une salle à la fois, transitions, apparition à la bonne sortie ; C) sauvegarde des salles visitées, portes ouvertes, raccourcis ; D) carte du monde dans le menu ; E) redécouper chapitres 1 à 3 en zones reliées (hub au Village Oublié) ; F) ajouter les zones 4 à 9 avec leurs boss et fragments.
+**À décider avec l'utilisateur** : taille du monde (nombre de salles par zone), ordre libre ou guidé des 7 régions, retour libre dans les zones terminées, un seul point d'entrée (Racines Mousseuses) ou départ au village.
+
+## Zones actuelles (3 cartes longues, à redécouper en monde interconnecté — voir ci-dessus ; un thème, un PNJ, un mini-boss, un boss chacune)
 | # | Titre | Carte | Ennemis | PNJ | Mini-boss | Boss | Orbe | Portail |
 |---|-------|-------|---------|-----|-----------|------|------|---------|
 | 1 | Les Racines Mousseuses | ≈604x18 | slime vert, spore, cracheur, sauteur | Mousse l'Ancien | Le Gardien du Pont | La Gardienne des Racines | double saut | bleu |
@@ -48,12 +61,20 @@ Boss (attaques, `moves` dans chapters.js) : ch1 racines/volée/invocation/charge
 Portails : 2 paires T↔t par chapitre (raccourcis, à découvrir des deux côtés puis HAUT pour entrer), un portail de sortie qui s'ouvre à la mort du boss, un portail d'arrivée au début de chaque chapitre.
 
 Règle : aucune capacité n'est obligatoire pour finir un chapitre (fossés ≤ 4 tuiles, marches ≤ 2). Double saut et saut mural ouvrent des coffres optionnels.
-Ajouter un chapitre : `build(...)` dans `tools/make_maps.py` → `npm run maps` → une entrée dans `src/levels/chapters.js` (+ `STORY` dans `src/story/story.js`).
+Dans le futur monde interconnecté, « chapitre » = zone ; l'ancienne règle (carte linéaire d'un bout à l'autre) ne s'applique plus. Ajouter un chapitre : `build(...)` dans `tools/make_maps.py` → `npm run maps` → une entrée dans `src/levels/chapters.js` (+ `STORY` dans `src/story/story.js`).
 
 ## Étincelles, compétences, quêtes
 - Étincelles ✦ (anciennement « éclats », voir Vocabulaire) : 2 par ennemi (× multiplicateur du chapitre), 10 par coffre, 25-40 par mini-boss, 40 par boss, + récompenses de quêtes.
 - 12 compétences en **arbre de nœuds** (src/systems/Skills.js : `pos`, `req`, racine `ROOT` ; rendu SVG dans ui/Menu.js) : Lame (Lame vive, Tranchant, Quatrième souffle, Onde de lame), Ombre (Éclair, Pas du vent, Dash aérien, Dash spectral), Lumière (Réserve, Armure, Soif de lumière, Nova). Coût total ≈ 196 ✦.
 - Quêtes (src/story/story.js + src/systems/Quests.js) : activées en parlant au PNJ du chapitre ; types talk / kill / chest / orb / mini / boss.
+
+## Assets exploités au maximum (fait, v0.5.0 / v0.5.1)
+Demande : « Utilise tous » les packs. Scripts : `tools/build_extra_assets.py` (effets, coffres, flammes) et `tools/build_decor.py` (atlas de décors + `src/assets/decor.js`).
+- **Animation Pack → combat** (`Effects.sprite(nom, x, y, options)`) : chaque coup du combo a son effet (éclat, ligne de feu, rayon d'énergie à la fin du combo ; foudre + rayon sur le coup chargé ; éclat vers le haut ; glace vers le bas), tir spécial = boule d'énergie animée + explosion d'impact, onde de lame = boule de glace, Nova = explosion + éclat + glace, impacts sur ennemis (fx_hit), mort d'ennemi (explosion), dash (éclat), pièges des boss (Hazards : foudre + brûlure), tirs ennemis = boule de glace animée + impact.
+- **Objets animés** : coffres (bois ch.1, fer ch.2, or ch.3, ouverture animée), cristal de sauvegarde, miroir magique pour les orbes de compétence.
+- **Décors** : Mossy (plantes, rochers, lianes au plafond, épines sur les pics) aux chapitres 1-2 ; accessoires du village (tonneaux, puits, épouvantail, tombes, feux de camp, braseros…) au chapitre 3 avec flammes animées (TX FX Flame) ; dispersés de façon déterministe par `Level.#scatter`.
+- **Fonds** : fond « forêt » (collines Mossy) au chapitre 1, `windrise` aux chapitres 2 et 3 (teinte nuit au 3).
+- **Limites connues** : le Seeker Lite n'a que 6 animations (les autres demandent l'édition complète, payante) — les effets compensent ; les plateformes flottantes Mossy ne sont pas utilisées (essai non concluant) ; le pack « BlueWizard dash effects » est en fait un **personnage** (le sorcier), pas un effet : non utilisable ; les licences des packs interdisent de redistribuer les fichiers alors que le dépôt est public (passer en privé).
 
 ## Structure des fichiers
 
@@ -67,6 +88,8 @@ lumenfall/
 ├── histoires/                 # saison-1/ (histoire de base + 3 suites selon le choix final) · saison-2/ (prologue)
 ├── tools/
 │   ├── build_assets.py        # zips bruts → bandes de sprites + tilesets 3x3 (assets/)
+│   ├── build_extra_assets.py  # Animation Pack, coffres, flammes → effects/
+│   ├── build_decor.py         # atlas de décors Mossy + village → assets/decor/ + src/assets/decor.js
 │   ├── make_maps.py           # génère src/levels/chapterN.js (cartes ASCII)
 │   └── copy-assets.mjs        # copie assets/ vers dist/assets/ après le build
 ├── src/
@@ -98,9 +121,10 @@ lumenfall/
 └── assets/                    # images générées par tools/build_assets.py (≈ 2,5 Mo) — à ajouter à la main sur GitHub
     ├── characters/ seeker_{idle,run,jump,attack,hurt,death}.png (Hooded Seeker Lite) + hero_* (ancien sorcier, repli)
     ├── enemies/    slime_green, slime_orange, spore, boss_poison, boss_wind
-    ├── effects/    plant1, plant4, blueflower (décors animés), portal_{blue,yellow,red} (pack Pixel Portal, 21 images de 64 px)
+    ├── effects/    fx_* (energyball, energyimpact, hit, explosion, burn, fireline, shine, iceburst, iceball, thunder, crystal, mirror, beam, flame), chest_{wood,iron,silver,gold}, plant1, plant4, blueflower (décors animés), portal_{blue,yellow,red} (pack Pixel Portal, 21 images de 64 px)
     ├── maps/       tiles_mossy, tiles_mond, tiles_village (3x3 tranches de 64 px)
-    ├── backgrounds/ windrise.jpg
+    ├── decor/      mossy.png, village.png (atlas ; rectangles dans src/assets/decor.js)
+    ├── backgrounds/ windrise.jpg, forest.jpg
     ├── ui/         menu_bg.jpg (fond du menu, texte retiré), logo.png (logo encadré, fond transparent), cursor.png (icône de sélection)
     └── fonts/      eb-garamond-latin-400/500-normal.woff2 (police du menu, embarquée pour jouer hors ligne)
 ```
@@ -129,4 +153,6 @@ lumenfall/
 12. Menu d'accueil calqué sur la maquette — fait (v0.4.1)
 13. Histoire adaptée (story.js) + renommage éclats → étincelles — fait (v0.4.2)
 14. Dialogues animés (voix blips, écriture vivante, balises `*or*` `~tremble~`) — fait (v0.4.3)
-15. Suite de l'histoire : régions 2 à 7, choix final (3 suites de la saison 1), puis saison 2 — à planifier
+15. Assets exploités au maximum (effets de combat, coffres/cristaux/miroirs animés, décors, flammes, fond forêt) — fait (v0.5.0 / v0.5.1)
+16. **Monde interconnecté** (style Hollow Knight : zones reliées, verrous par capacités, raccourcis, carte du monde dévoilée) — à planifier, étapes A à F dans « Structure du monde »
+17. Suite de l'histoire : régions 2 à 7 comme zones du monde, choix final (3 suites de la saison 1), puis saison 2 — à planifier
