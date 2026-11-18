@@ -21,6 +21,7 @@ function onKill(p, game, e) {
   game.hitStop = Math.max(game.hitStop || 0, 0.12);
   game.camera.shake(0.35, 0.2); game.camera.punch(0.07);
   game.fx.ring(e.x, e.y + e.h / 2, 0xb59bff, 4, 0.4);
+  game.fx.sprite('fx_explosion', e.x, e.y + e.h / 2, { w: 3 + e.w, fps: 20, color: 0xc9a8ff });
 }
 
 function strike(p, game, kind, dmg) {
@@ -35,6 +36,7 @@ function strike(p, game, kind, dmg) {
     e.hit(dmg, dir, game, heavy);
     const cx = e.x, cy = e.y + e.h / 2;
     game.fx.impact(cx, cy, dir, heavy);
+    game.fx.sprite('fx_hit', cx, cy, { w: heavy ? 3.4 : 2.2, fps: 28, flip: dir, rot: kind === 'up' ? Math.PI / 2 : kind === 'down' ? -Math.PI / 2 : 0 });
     game.fx.number(cx, cy + e.h / 2 + 0.3, dmg, heavy ? '#ffd24a' : '#ffffff', heavy);
     p.energy = Math.min(p.maxEnergy, p.energy + 1);
     p.hitCount = (p.hitCount || 0) + 1;
@@ -47,6 +49,19 @@ function strike(p, game, kind, dmg) {
   if (hitAny && kind === 'down') { p.vy = COMBAT.pogo; p.airJumps = 0; p.airDashes = 0; }
   if (hitAny && kind === 'front' && !p.onGround) p.vy = Math.max(p.vy, 3); // léger soutien en l'air
   return hitAny;
+}
+
+// Chaque coup a son effet : 1 = lame, 2 = ligne de feu, 3 = rayon d'énergie, chargé = foudre, haut = éclat, bas = glace
+function slashFx(p, game, kind, charged) {
+  const d = p.facing, fx = game.fx;
+  if (charged) {
+    fx.sprite('fx_thunder', p.x + d * 3.2, p.y + 2.6, { w: 2.2, h: 4.4, fps: 18, color: 0x9fe9ff });
+    fx.sprite('fx_beam', p.x + d * 2.4, p.y + 0.9, { w: 5, fps: 24, flip: d, color: 0x6ee7ff });
+  } else if (kind === 'up') fx.sprite('fx_shine', p.x, p.y + 2.2, { w: 2.4, fps: 24 });
+  else if (kind === 'down') fx.sprite('fx_iceburst', p.x, p.y - 0.4, { w: 2.6, fps: 24, color: 0xbfeaff });
+  else if (p.attackFinisher) fx.sprite('fx_beam', p.x + d * 2.2, p.y + 0.9, { w: 4.6, fps: 26, flip: d, color: 0xffe9a0 });
+  else if (p.comboIdx === 1) fx.sprite('fx_fireline', p.x + d * 1.7, p.y + 0.9, { w: 2.6, fps: 26, flip: d, color: 0xffc080 });
+  else fx.sprite('fx_shine', p.x + d * 1.2, p.y + 1, { w: 1.5, fps: 28 });
 }
 
 function startAttack(p, game, kind, charged, input) {
@@ -73,18 +88,20 @@ function startAttack(p, game, kind, charged, input) {
   game.audio?.sfx(heavy ? 'slashHeavy' : 'slash');
   game.fx.slash(p, kind === 'charged' ? 'front' : kind, charged ? 1.5 : p.attackFinisher ? 1.25 : 1,
     charged ? 0x6ee7ff : p.attackFinisher ? 0xffe9a0 : 0xdff6ff, heavy);
+  slashFx(p, game, kind, charged);
   if (heavy) { game.camera.shake(0.18, 0.12); game.camera.punch(0.03); }
-  if (charged && st.wave) fireProj(p, game, { dmg: 2 + st.power, color: 0x6ee7ff, size: 1.6, speed: 15, pierce: true });
+  if (charged && st.wave) fireProj(p, game, { dmg: 2 + st.power, color: 0x6ee7ff, size: 1.6, speed: 15, pierce: true, sprite: 'fx_iceball' });
 }
 
-function fireProj(p, game, { dmg, color, size = 1, speed = COMBAT.projSpeed, pierce = false }) {
+function fireProj(p, game, { dmg, color, size = 1, speed = COMBAT.projSpeed, pierce = false, sprite = 'fx_energyball' }) {
   const m = new THREE.Mesh(game.fx.plane, new THREE.MeshBasicMaterial({
     map: game.fx.texGlow, color, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
   }));
   m.scale.set(1.1 * size, 1.1 * size, 1);
   m.position.set(p.x + p.facing * 0.8, p.y + 1, 3);
   game.scene.add(m); game.audio?.sfx('spell');
-  game.projectiles.push({ mesh: m, x: m.position.x, y: m.position.y, w: 0.7 * size, h: 0.7 * size, vx: p.facing * speed, life: 1.2, dmg, pierce, color, hit: new Set() });
+  const spr = game.fx.sprite(sprite, m.position.x, m.position.y, { w: 2.2 * size, fps: 20, loop: true, life: 99, flip: p.facing, fade: false, color });
+  game.projectiles.push({ spr, mesh: m, x: m.position.x, y: m.position.y, w: 0.7 * size, h: 0.7 * size, vx: p.facing * speed, life: 1.2, dmg, pierce, color, hit: new Set() });
 }
 
 function nova(p, game) {
@@ -93,6 +110,9 @@ function nova(p, game) {
   game.fx.ring(p.x, p.y + 0.9, 0xffe9a0, R * 2.2, 0.45); game.fx.ring(p.x, p.y + 0.9, 0xffffff, R * 1.5, 0.3);
   game.fx.glow(p.x, p.y + 0.9, 0xffe9a0, R * 1.6, 0.35, 1.3);
   game.fx.sparks(p.x, p.y + 0.9, 0xffe9a0, 18, 12);
+  game.fx.sprite('fx_explosion', p.x, p.y + 0.9, { w: R * 2.2, fps: 16, color: 0xffd98a });
+  game.fx.sprite('fx_shine', p.x, p.y + 0.9, { w: R * 1.2, fps: 14 });
+  game.fx.sprite('fx_iceburst', p.x, p.y + 0.4, { w: R * 1.6, fps: 14, color: 0xbfeaff });
   game.camera.shake(0.45, 0.25); game.camera.punch(0.08); game.hitStop = Math.max(game.hitStop || 0, 0.06);
   for (const e of game.enemies) {
     if (e.dead) continue;
@@ -147,11 +167,12 @@ export function updateCombat(p, input, game, dt) {
     }
   }
 
-  // Projectiles (avec traînée)
+  // Projectiles (avec traîne)
   for (let i = game.projectiles.length - 1; i >= 0; i--) {
     const pr = game.projectiles[i];
     pr.x += pr.vx * dt; pr.life -= dt;
     pr.mesh.position.x = pr.x;
+    if (pr.spr) pr.spr.mesh.position.set(pr.x, pr.y, 3.2);
     pr.mesh.scale.setScalar(pr.mesh.scale.x * (1 + Math.sin(pr.life * 40) * 0.01));
     if (Math.random() < 0.7) game.fx.burst(pr.x, pr.y, pr.color, 1, 1.5);
     const box = { x: pr.x, y: pr.y - pr.h / 2, w: pr.w, h: pr.h };
@@ -162,11 +183,12 @@ export function updateCombat(p, input, game, dt) {
       const dir = Math.sign(pr.vx);
       e.hit(pr.dmg, dir, game, true);
       game.fx.impact(pr.x, pr.y, dir, true, pr.color);
+      game.fx.sprite('fx_energyimpact', pr.x, pr.y, { w: 3, fps: 24, color: pr.color });
       game.fx.number(e.x, e.y + e.h + 0.3, pr.dmg, '#8fe9ff', true);
       game.hitStop = Math.max(game.hitStop || 0, 0.05); game.camera.shake(0.2, 0.12);
       if (e.dead) onKill(p, game, e);
       if (!pr.pierce) { dead = true; break; }
     }
-    if (dead) { game.scene.remove(pr.mesh); pr.mesh.material.dispose(); game.projectiles.splice(i, 1); }
+    if (dead) { if (pr.spr) pr.spr.life = 0; game.scene.remove(pr.mesh); pr.mesh.material.dispose(); game.projectiles.splice(i, 1); }
   }
 }

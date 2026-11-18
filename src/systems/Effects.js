@@ -8,8 +8,10 @@ function canvasTex(w, h, draw) {
 }
 
 export class Effects {
-  constructor(scene) {
+  constructor(scene, assets = null) {
     this.scene = scene;
+    this.assets = assets;
+    this.texCache = {};
     this.items = [];
     this.plane = new THREE.PlaneGeometry(1, 1);
     this.texGlow = canvasTex(64, 64, (g, w, h) => {
@@ -57,6 +59,26 @@ export class Effects {
     this.items.push({ kind: 'slash', mesh: m, p, ox, oy, dir, rot, size, life: heavy ? 0.26 : 0.19, max: heavy ? 0.26 : 0.19, vert: kind !== 'front' });
     // halo
     this.glow(p.x + ox, p.y + oy, color, 2.4 * size, 0.18);
+  }
+
+
+  // Animation en bande (Animation Pack) jouée une fois (ou en boucle jusqu'à life). Retourne l'item pour le déplacer/le supprimer.
+  // opts : w,h (taille en unités), fps, life, rot, flip, color, add (additif), follow {p,ox,oy}, vx, vy, loop, z
+  sprite(name, x, y, { w = 2, h = null, fps = 18, life = null, rot = 0, flip = 1, color = 0xffffff, add = true, vx = 0, vy = 0, loop = false, z = 3.2, follow = null, fade = true } = {}) {
+    const a = this.assets?.strips?.[name];
+    if (!a) return null;                                  // image absente : on ne fait rien (les effets procéduraux restent)
+    let tex = this.texCache[name];
+    if (!tex) { tex = this.texCache[name] = a.tex; }
+    const t = tex.clone(); t.needsUpdate = true; t.repeat.set(1 / a.frames, 1);
+    const fh = tex.image.height, fw = tex.image.width / a.frames;
+    h = h ?? w * fh / fw;
+    const m = new THREE.Mesh(this.plane, new THREE.MeshBasicMaterial({ map: t, color, transparent: true, depthWrite: false, blending: add ? THREE.AdditiveBlending : THREE.NormalBlending }));
+    m.position.set(x, y, z); m.scale.set(w * flip, h, 1); m.rotation.z = rot;
+    this.scene.add(m);
+    const dur = life ?? a.frames / fps;
+    const it = { kind: 'anim', mesh: m, tex: t, frames: a.frames, fps, life: dur, max: dur, vx, vy, loop, fade, follow, w, h, flip };
+    this.items.push(it);
+    return it;
   }
 
   glow(x, y, color = 0xffffff, size = 1.5, life = 0.25, grow = 1.6) {
@@ -150,9 +172,17 @@ export class Effects {
         case 'spark': m.position.x += it.vx * dt; m.position.y += it.vy * dt; it.vx *= 0.92; it.vy = it.vy * 0.92 - 6 * dt; m.rotation.z = Math.atan2(it.vy, it.vx); m.material.opacity = k; break;
         case 'dot': m.position.x += it.vx * dt; m.position.y += it.vy * dt; it.vy -= (it.soft ? 0 : 14) * dt; it.vx *= 0.97; m.material.opacity = k; break;
         case 'num': m.position.y += it.vy * dt; it.vy *= 0.93; m.material.opacity = Math.min(1, k * 2.5); break;
+        case 'anim': {
+          const f = it.loop ? Math.floor((it.max - it.life) * it.fps) % it.frames : Math.min(it.frames - 1, Math.floor((it.max - it.life) * it.fps));
+          it.tex.offset.x = f / it.frames;
+          if (it.follow) { m.position.x = it.follow.p.x + it.follow.ox; m.position.y = it.follow.p.y + it.follow.oy; }
+          m.position.x += it.vx * dt; m.position.y += it.vy * dt;
+          if (it.fade) m.material.opacity = Math.min(1, it.life / (it.max * 0.25));
+          break;
+        }
         case 'ghost': m.material.opacity = k * 0.7; break;
       }
-      if (it.life <= 0) { this.scene.remove(m); m.material.dispose(); this.items.splice(i, 1); }
+      if (it.life <= 0) { this.scene.remove(m); m.material.dispose(); it.tex?.dispose(); this.items.splice(i, 1); }
     }
   }
 }

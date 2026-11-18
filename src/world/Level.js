@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { SpriteAnim } from '../engine/SpriteAnim.js';
+import { MOSSY, VILLAGE } from '../assets/decor.js';
 
 // Légende : # solide | = plateforme traversable | ^ pics | . vide
 // P départ | c rampant | f volant | k cracheur | h sauteur | w esprit | r brute | S sauvegarde | C coffre | D orbe double-saut | W orbe saut mural | B boss | T/t portails appariés (le 1er T ↔ le 1er t…)
@@ -10,6 +11,15 @@ const DECOR = {
   q: { strip: 'plant4', h: 2.2 },
   b: { strip: 'blueflower', h: 1.3 },
 };
+
+let GLOW = null;
+function glowTex() {
+  if (GLOW) return GLOW;
+  const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d');
+  const r = g.createRadialGradient(32, 32, 0, 32, 32, 32); r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = r; g.fillRect(0, 0, 64, 64);
+  return (GLOW = new THREE.CanvasTexture(c));
+}
 
 function spikeTexture(color) {
   const c = document.createElement('canvas'); c.width = 96; c.height = 48;
@@ -30,7 +40,7 @@ export class Level {
     this.decorSpawns = [];
     this.spawn = { x: 2, y: 2 };
     this.group = new THREE.Group();
-    this.decor = [];
+    this.decor = []; this.flames = [];
     this.#parse();
     this.#build(assets);
   }
@@ -124,9 +134,73 @@ export class Level {
       a.mesh.position.set(d.x, d.y + def.h / 2 - 0.03, -0.4);
       this.group.add(a.mesh); this.decor.push(a);
     }
+    this.#scatter(assets);
   }
 
-  update(dt) { for (const a of this.decor) a.play(dt); }
+  // Décor dispersé (déterministe) : atlas Mossy (ch. 1-2) ou accessoires du village (ch. 3), flammes animées sur feux et torches.
+  #scatter(assets) {
+    const kind = this.theme.tiles === 'village' ? 'village' : 'mossy';
+    const atlas = assets?.decor?.[kind], R = kind === 'village' ? VILLAGE : MOSSY;
+    if (!atlas) return;
+    let seed = 7 + this.w * 31 + this.h;
+    const rnd = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
+    const PX = kind === 'village' ? 1 / 22 : 1 / 100; // unités par pixel d'atlas
+    const sprite = (name, x, y, z, { anchor = 'bottom', flip = false, scale = 1, color = 0xffffff, opacity = 1 } = {}) => {
+      const r = R[name]; if (!r) return null;
+      const t = atlas.clone(); t.needsUpdate = true;
+      t.repeat.set(r[2] / atlas.image.width, r[3] / atlas.image.height);
+      t.offset.set(r[0] / atlas.image.width, 1 - (r[1] + r[3]) / atlas.image.height);
+      const w = r[2] * PX * scale, h = r[3] * PX * scale;
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: t, color, transparent: true, opacity, depthWrite: false }));
+      m.position.set(x, anchor === 'top' ? y - h / 2 : y + h / 2, z); if (flip) m.scale.x = -1;
+      this.group.add(m); return { m, w, h };
+    };
+    const flame = (x, y, w, color) => {
+      const a = assets?.strips?.fx_flame; if (!a) return;
+      const t = a.tex.clone(); t.needsUpdate = true; t.repeat.set(1 / a.frames, 1);
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(w, w), new THREE.MeshBasicMaterial({ map: t, color, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+      m.position.set(x, y + w / 2 * 0.8, 0.1); this.group.add(m);
+      const g = new THREE.Mesh(new THREE.PlaneGeometry(w * 3, w * 3), new THREE.MeshBasicMaterial({ map: glowTex(), color, transparent: true, opacity: 0.45, depthWrite: false, blending: THREE.AdditiveBlending }));
+      g.position.set(x, y + w / 2, 0.05); this.group.add(g);
+      this.flames.push({ t, frames: a.frames, ph: rnd() * a.frames });
+    };
+    const GROUND = kind === 'village'
+      ? ['Barrel', 'Crate_Large', 'Crate_Small', 'Pot_01', 'Pot_02', 'Pot_03', 'Bush_02', 'Bush_03', 'Sunflower_01', 'Sunflower_02', 'Sunflower_03', 'Pumpkin_01', 'Hay_Bale', 'Gunny_Bag_01', 'Grass_02', 'Grass_05', 'Rock_02', 'Stump']
+      : ['plant1', 'plant2', 'plant3', 'plant4', 'plant5', 'plant6', 'rock1', 'rock2', 'rock3'];
+    const BIG = kind === 'village' ? ['Well', 'Scarecrow', 'Tree_02', 'Statue', 'Weapon_Rack', 'Training_Dummy', 'Banner_Pillar', 'Sign_01', 'Gravestone_02', 'Gravestone_03', 'Gravestone_04', 'Stone_of_Recall', 'Log_Bench', 'Wood_Logs', 'Campfire', 'Fire_Bowl', 'Campfire', 'Fire_Bowl'] : [];
+    let lastBig = -99;
+    for (let ty = 1; ty < this.h - 1; ty++) {
+      for (let tx = 1; tx < this.w - 1; tx++) {
+        const c = this.#cell(tx, ty);
+        if (c === '#' && this.#cell(tx, ty + 1) === '.' && this.#cell(tx - 1, ty + 1) === '.' && this.#cell(tx + 1, ty + 1) === '.') {
+          const r = rnd();
+          if (kind === 'village' && BIG.length && r < 0.09 && tx - lastBig > 7) {
+            const n = BIG[Math.floor(rnd() * BIG.length)]; lastBig = tx;
+            sprite(n, tx + 0.5, ty + 1 - 0.05, -0.35, { flip: rnd() < 0.5 });
+            if (n === 'Campfire') flame(tx + 0.5, ty + 1.05, 1.5, 0xff9a3a);
+            else if (n === 'Fire_Bowl') flame(tx + 0.5, ty + 1.45, 1.1, 0xff9a3a);
+          } else if (r < (kind === 'village' ? 0.22 : 0.3)) {
+            const n = GROUND[Math.floor(rnd() * GROUND.length)];
+            const sc = kind === 'village' ? 1 : 0.55 + rnd() * 0.4;
+            sprite(n, tx + 0.5 + (rnd() - 0.5) * 0.6, ty + 1 - 0.04, -0.45, { flip: rnd() < 0.5, scale: sc, color: kind === 'village' ? 0xffffff : 0xa8c8b0 });
+          }
+        } else if (c === '#' && this.#cell(tx, ty - 1) === '.' && kind === 'mossy' && rnd() < 0.16) {
+          const n = ['vine1', 'vine2', 'vine3', 'vine4'][Math.floor(rnd() * 4)];
+          sprite(n, tx + 0.5, ty + 0.05, -0.3, { anchor: 'top', scale: 0.35 + rnd() * 0.35, flip: rnd() < 0.5, color: 0xb8d8c0 });
+        } else if (c === '^' && kind === 'mossy' && rnd() < 0.5) {
+          sprite(['thorn1', 'thorn2', 'thorn3'][Math.floor(rnd() * 3)], tx + 0.5, ty - 0.05, 0.2, { scale: 0.3, flip: rnd() < 0.5 });
+        }
+      }
+    }
+    // feu de camp d'un point de sauvegarde au chapitre 3
+    if (kind === 'village') for (const d of this.spawns) if (d.type === 'S') { sprite('Fire_Bowl', d.x + 1.6, d.y - 0.04, -0.3); flame(d.x + 1.6, d.y + 0.85, 1.1, 0xff9a3a); }
+  }
+
+  update(dt) {
+    for (const a of this.decor) a.play(dt);
+    const t = performance.now() / 1000;
+    for (const f of this.flames) f.t.offset.x = (Math.floor(t * 14 + f.ph) % f.frames) / f.frames;
+  }
 
   dispose() {
     this.group.traverse((o) => { if (o.geometry) o.geometry.dispose(); });
