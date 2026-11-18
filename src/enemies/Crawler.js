@@ -1,15 +1,16 @@
 import { Enemy } from './Enemy.js';
 
 // Rampant (slime) : patrouille, fait demi-tour aux murs et aux rebords, charge le joueur proche.
-// variant : 'green' (chapitres 1 et 3) ou 'orange' (chapitre 2)
+// variant : 'green' (chapitres 1 et 3), 'orange' (chapitre 2) ou 'rat' (rat, si rat_run est chargé ; sinon slime vert)
 export class Crawler extends Enemy {
   constructor(game, x, y, variant = 'green', hpMul = 1) {
     const orange = variant === 'orange';
+    const rat = variant === 'rat' && !!game.assets?.strips?.rat_run;
     super(game, x, y, {
-      w: orange ? 1.3 : 1.2, h: 0.95, hp: Math.round(3 * hpMul), color: orange ? '#8a5a1f' : '#2f6b3a',
-      skin: { strip: orange ? 'slime_orange' : 'slime_green', h: orange ? 1.15 : 1.0, fps: 9 },
+      w: orange ? 1.3 : rat ? 1.1 : 1.2, h: rat ? 0.8 : 0.95, hp: Math.round(3 * hpMul), color: orange ? '#8a5a1f' : '#2f6b3a',
+      skin: rat ? { strip: 'rat_run', h: 1.0, fps: 14 } : { strip: orange ? 'slime_orange' : 'slime_green', h: orange ? 1.15 : 1.0, fps: 9 },
     });
-    this.speed = orange ? 2.6 : 2.2;
+    this.speed = rat ? 3.2 : orange ? 2.6 : 2.2;
   }
   ai(game) {
     const lvl = game.level;
