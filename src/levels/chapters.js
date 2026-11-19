@@ -1,6 +1,10 @@
 import { map as map1 } from './chapter1.js';
 import { map as map2 } from './chapter2.js';
 import { map as map3 } from './chapter3.js';
+import { ROOMS } from './rooms_racines.js';
+
+// Salles de chaque zone (monde interconnecté, voir monde.md)
+export const ZONES = { racines: ROOMS };
 
 // Un chapitre = une carte + un thème visuel + des ennemis + un boss.
 // Pour ajouter un chapitre : tools/make_maps.py (carte) → une entrée ici → c'est tout.
@@ -14,7 +18,7 @@ export const CHAPTERS = [
     roster: { c: ['slime', 'rat', 'rat'], f: ['bat', 'spore'], k: 'cracheur' },
     boss: { name: 'La Gardienne des Racines', strip: 'boss_poison', spriteH: 3.9, hp: 48, w: 2.6, h: 2.8, color: '#2f6b3a', moves: ['roots', 'volley', 'summon', 'charge'] },
     mini: { name: 'Le Gardien du Pont', strip: 'slime_green', spriteH: 2.6, hp: 20, w: 2.0, h: 1.8, color: '#2f6b3a', tint: 0xb6ff8a, shards: 25, moves: ['charge', 'roots'] },
-    unlocks: ['dash'],
+    unlocks: ['dash'], rooms: 'racines', startRoom: 'racines/r01',
   },
   {
     title: 'Les Plaines du Vent', subtitle: 'Chapitre 2',
