@@ -1,9 +1,9 @@
 import { SKILLS, BRANCHES, ROOT, canBuy, buy, skillById } from '../systems/Skills.js';
-import { CHAPTERS } from '../levels/chapters.js';
+import { CHAPTERS, ZONES } from '../levels/chapters.js';
 
 const esc = (s) => String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
 
-// Menus plein écran : démarrage, chapitres, aide, pause, compétences, quêtes.
+// Menus plein écran : démarrage, chapitres, aide, pause, compétences, quêtes, carte du monde.
 // h : { continue(), newGame(), chapter(i), resume(), mainMenu(), erase(), hasSave(), unlocked() }
 export class Menu {
   constructor(game, h) {
@@ -38,7 +38,7 @@ export class Menu {
   get open() { return this.screen !== null; }
 
   show(screen) {
-    this.screen = screen; this.el.style.display = 'flex'; this.el.className = ['start', 'help', 'chapters', 'options', 'credits'].includes(screen) ? (screen === 'start' ? 'start home' : 'start') : screen === 'skills' || screen === 'quests' ? 'tree' : 'pause';
+    this.screen = screen; this.el.style.display = 'flex'; this.el.className = ['start', 'help', 'chapters', 'options', 'credits'].includes(screen) ? (screen === 'start' ? 'start home' : 'start') : screen === 'skills' || screen === 'quests' || screen === 'map' ? 'tree' : 'pause';
     this.el.innerHTML = this[`#${screen}`]();
     this.el.scrollTop = 0;
     const first = this.el.querySelector('.mi:not(:disabled)'); if (first) first.classList.add('sel');
@@ -63,6 +63,7 @@ export class Menu {
       case 'resume': h.resume(); break;
       case 'skills': this.show('skills'); break;
       case 'quests': this.show('quests'); break;
+      case 'map': this.show('map'); break;
       case 'main': h.mainMenu(); break;
       case 'erase': if (confirm('Effacer la sauvegarde et recommencer ?')) h.erase(); break;
       case 'buy': {
@@ -115,6 +116,7 @@ export class Menu {
       ${item('resume', 'Reprendre')}
       ${item('skills', 'Compétences', `<small>✦ ${this.game.player.shards} étincelles</small>`)}
       ${item('quests', 'Quêtes')}
+      ${this.game.world.roomId ? item('map', 'Carte du monde') : ''}
       ${item('options', 'Options')}
       ${item('main', 'Menu principal')}
       ${item('erase', 'Effacer la sauvegarde', '', 'danger')}</nav></div>`;
@@ -139,7 +141,7 @@ export class Menu {
 
   #tabs(cur) {
     const t = (id, l) => `<button data-act="tab" data-arg="${id}" class="tab ${cur === id ? 'on' : ''}">${l}</button>`;
-    return `<div class="tabs">${t('skills', 'Compétences')}${t('quests', 'Quêtes')}</div>
+    return `<div class="tabs">${t('skills', 'Compétences')}${t('quests', 'Quêtes')}${this.game.world.roomId ? t('map', 'Carte') : ''}</div>
       <div class="compass" title="Étincelles"><b>${this.game.player.shards}</b><small>✦</small></div>`;
   }
 
@@ -170,6 +172,26 @@ export class Menu {
       <svg class="graph" viewBox="0 0 1000 500" preserveAspectRatio="xMidYMid meet">${lines}${nodes.map(node).join('')}</svg>
       <div class="info">${info}</div>
       <div class="hints"><button data-act="pause" class="hint">⟵ Retour</button><button data-act="buy" data-arg="${this.sel}" class="hint ok" ${canDo ? '' : 'disabled'}>Débloquer</button></div>`;
+  }
+
+  // Carte du monde : salles visitées (et leurs voisines, en grisé), reliées par leurs sorties
+  '#map'() {
+    const g = this.game, W = g.world, zone = ZONES[CHAPTERS[Math.max(0, W.index)]?.rooms];
+    const ids = Object.keys(zone || {}), seen = g.visited || new Set();
+    const known = new Set(seen);
+    for (const id of seen) for (const e of zone[id]?.exits || []) known.add(e.to);
+    const gxs = ids.map((i) => zone[i].gx), gys = ids.map((i) => zone[i].gy);
+    const x0 = Math.min(...gxs), y1 = Math.max(...gys), y0 = Math.min(...gys), CW = 56, CH = 40, P = 20;
+    const pos = (r) => [P + (r.gx - x0) * CW, P + (y1 - r.gy) * CH];
+    let svg = '';
+    for (const id of ids) { if (!known.has(id)) continue; const a = pos(zone[id]);
+      for (const e of zone[id].exits) { if (e.side !== 'E' || !known.has(e.to)) continue; const b = pos(zone[e.to]); svg += `<line x1="${a[0] + 36}" y1="${a[1] + 12}" x2="${b[0]}" y2="${b[1] + 12}" stroke="#6b7a70" stroke-width="3"/>`; } }
+    for (const id of ids) { if (!known.has(id)) continue; const [x, y] = pos(zone[id]), v = seen.has(id), cur = id === W.roomId;
+      svg += `<rect x="${x}" y="${y}" width="36" height="24" rx="4" fill="${cur ? '#ffd24a' : v ? '#3d6b52' : '#222b28'}" stroke="${cur ? '#fff' : '#6b7a70'}" stroke-width="${cur ? 3 : 1.5}"/>`; }
+    const wdt = P * 2 + (Math.max(...gxs) - x0) * CW + 36, hgt = P * 2 + (y1 - y0) * CH + 24;
+    return `${this.#tabs('map')}<div class="qlist"><h2 style="text-align:center">${CHAPTERS[W.index]?.title || ''}</h2>
+      <svg viewBox="0 0 ${wdt} ${hgt}" style="width:min(92vw,${wdt * 1.6}px);display:block;margin:0 auto">${svg}</svg>
+      <p class="dim2" style="text-align:center">Jaune : tu es ici · vert : salle explorée · gris : salle voisine inconnue</p></div><div class="hints"><button data-act="pause" class="hint">⟵ Retour</button></div>`;
   }
 
   '#quests'() {
