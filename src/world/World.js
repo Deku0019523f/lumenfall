@@ -9,11 +9,11 @@ import { Npc } from '../objects/Npc.js';
 import { STORY } from '../story/story.js';
 import { Interactables } from '../objects/Interactables.js';
 
-// Gère le chapitre courant : construit la carte, les ennemis, le boss, et nettoie le précédent.
+// Gère le chapitre courant : construit la carte (ou la salle), les ennemis, le boss, et nettoie le précédent.
 export class World {
   constructor(game) { this.game = game; this.level = null; this.bg = null; this.index = -1; this.roomId = null; this.changing = false; }
 
-  // fromSave : { x, y } point de réapparition à utiliser (sinon départ de la carte)
+  // fromSave : { x, y, room } point de réapparition à utiliser (sinon départ de la carte)
   load(index, spawn = null) {
     const ch = CHAPTERS[index];
     if (ch.rooms) return this.loadRoom(spawn?.room && ZONES[ch.rooms][spawn.room] ? spawn.room : ch.startRoom, null, spawn, index);
@@ -21,31 +21,53 @@ export class World {
     return this.#build(index, ch, ch.map, spawn);
   }
 
-  // Charge une salle d'une zone. entry = côté par lequel on entre ('E'|'W'|null) ; spawn = point imposé (sauvegarde, cristal)
+  // Charge une salle d'une zone. entry = côté de la NOUVELLE salle par lequel on entre ('E'|'W'|'N'|'S'|null) ; spawn = point imposé (sauvegarde, cristal)
   loadRoom(id, entry = null, spawn = null, index = this.index, fromId = null) {
     const g = this.game, ch = CHAPTERS[index], room = ZONES[ch.rooms][id];
     this.roomId = id; this.room = room; g.visited?.add(id);
-    let at = spawn;
+    const H = room.map.length, W = room.map[0].length;
+    let at = spawn, boost = 0;
     if (!at && entry && fromId) {
       const back = room.exits.find((e) => e.to === fromId && e.side === entry) || room.exits.find((e) => e.side === entry);
-      at = { x: entry === 'W' ? 1.6 : room.map[0].length - 2.6, y: back ? back.y0 : 2 };
+      if (entry === 'W' || entry === 'E') at = { x: entry === 'W' ? 1.6 : W - 2.6, y: back ? back.y0 : 2 };
+      else if (entry === 'N') at = { x: (back.x0 + back.x1 + 1) / 2, y: H - 2.6 };   // on tombe depuis la salle du dessus
+      else {                                                                           // on jaillit du trou du sol, posé à côté du trou
+        const floor = (x) => room.map[H - 2]?.[x] === '#' && room.map[H - 3]?.[x] !== '#';
+        const xr = back.x1 + 2, xl = back.x0 - 2;
+        at = { x: (floor(xr) || !floor(xl) ? xr : xl) + 0.5, y: 2 }; boost = 9;
+      }
+    }
+    // sorties verrouillées : murées tant que le drapeau n'est pas levé (levé en traversant l'autre côté)
+    const rows = room.map.map((r) => r.split(''));
+    for (const e of room.exits) {
+      if (!e.gate || g.collected?.has('flag:' + e.gate)) continue;
+      if (e.side === 'W' || e.side === 'E') for (let y = e.y0; y <= e.y1; y++) rows[H - 1 - y][e.side === 'W' ? 0 : W - 1] = '#';
+      else for (let x = e.x0; x <= e.x1; x++) { if (e.side === 'N') rows[0][x] = '#'; else { rows[H - 1][x] = '#'; rows[H - 2][x] = '#'; } }
     }
     this.#wrapGame();
-    return this.#build(index, ch, room.map, at, id);
+    const ch2 = this.#build(index, ch, rows.map((r) => r.join('')), at, id);
+    if (boost) g.player.vy = boost;
+    return ch2;
   }
 
-  // Sorties de salle : le héros franchit le bord gauche/droit à hauteur d'une ouverture
+  // Sorties de salle : bord gauche/droit à hauteur d'une ouverture, plafond ouvert (monter), trou du sol (tomber)
   #checkExits() {
     const g = this.game, p = g.player, lv = this.level, room = this.room;
     if (!room || this.changing || g.transitioning || g.dialogue?.active || g.menu?.open || p.dead || document.body.dataset.started !== '1') return;
-    const side = p.x < 0.35 ? 'W' : p.x > lv.w - 1.35 ? 'E' : null;
-    if (!side) return;
-    const ex = room.exits.find((e) => e.side === side && p.y >= e.y0 - 0.5 && p.y <= e.y1 + 1);
+    const inX = (e) => p.x >= e.x0 - 0.2 && p.x <= e.x1 + 1.2;
+    let ex = null, side = null;
+    if (p.x < 0.35 || p.x > lv.w - 1.35) { side = p.x < 0.35 ? 'W' : 'E'; ex = room.exits.find((e) => e.side === side && p.y >= e.y0 - 0.5 && p.y <= e.y1 + 1); }
+    else if (p.y > lv.h - 1.6) { side = 'N'; ex = room.exits.find((e) => e.side === 'N' && inX(e) && !(e.gate && !g.collected.has('flag:' + e.gate))); }
+    else if (p.y < 0.5) { side = 'S'; ex = room.exits.find((e) => e.side === 'S' && inX(e)); }
     if (!ex) return;
     this.changing = true; g.hud.fade(true);
-    const from = this.roomId, opp = side === 'E' ? 'W' : 'E';
+    const from = this.roomId, opp = { E: 'W', W: 'E', N: 'S', S: 'N' }[side];
     const keep = { ...p.spawnPoint };
-    setTimeout(() => { this.loadRoom(ex.to, opp, null, this.index, from); p.spawnPoint = keep; g.player.invuln = Math.max(g.player.invuln, 0.8); g.hud.fade(false); this.changing = false; }, 260);
+    if (ex.opens && !g.collected.has('flag:' + ex.opens)) { g.collected.add('flag:' + ex.opens); setTimeout(() => g.hud.say('Quelque part, un passage s\'ouvre…', 3), 600); }
+    setTimeout(() => {
+      this.loadRoom(ex.to, opp, null, this.index, from); p.spawnPoint = keep; p.invuln = Math.max(p.invuln, 0.8); g.hud.fade(false); this.changing = false;
+      const nm = this.room?.name; if (nm && !this.shown?.has(this.roomId)) { (this.shown ||= new Set()).add(this.roomId); g.hud.say(nm, 2.5); }
+    }, 260);
   }
 
   // Sauvegarde et renaissance conscientes des salles (installé une seule fois)

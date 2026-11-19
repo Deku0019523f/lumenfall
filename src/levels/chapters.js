@@ -18,7 +18,7 @@ export const CHAPTERS = [
     roster: { c: ['slime', 'rat', 'rat'], f: ['bat', 'spore'], k: 'cracheur' },
     boss: { name: 'La Gardienne des Racines', strip: 'boss_poison', spriteH: 3.9, hp: 48, w: 2.6, h: 2.8, color: '#2f6b3a', moves: ['roots', 'volley', 'summon', 'charge'] },
     mini: { name: 'Le Gardien du Pont', strip: 'slime_green', spriteH: 2.6, hp: 20, w: 2.0, h: 1.8, color: '#2f6b3a', tint: 0xb6ff8a, shards: 25, moves: ['charge', 'roots'] },
-    unlocks: ['dash'], rooms: 'racines', startRoom: 'racines/r01',
+    unlocks: ['dash'], rooms: 'racines', startRoom: 'racines/entree',
   },
   {
     title: 'Les Plaines du Vent', subtitle: 'Chapitre 2',
