@@ -24,7 +24,7 @@ export class World {
   // Charge une salle d'une zone. entry = côté par lequel on entre ('E'|'W'|null) ; spawn = point imposé (sauvegarde, cristal)
   loadRoom(id, entry = null, spawn = null, index = this.index, fromId = null) {
     const g = this.game, ch = CHAPTERS[index], room = ZONES[ch.rooms][id];
-    this.roomId = id; this.room = room;
+    this.roomId = id; this.room = room; g.visited?.add(id);
     let at = spawn;
     if (!at && entry && fromId) {
       const back = room.exits.find((e) => e.to === fromId && e.side === entry) || room.exits.find((e) => e.side === entry);
