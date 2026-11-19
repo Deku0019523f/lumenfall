@@ -13,7 +13,7 @@ export class Interactables {
     };
     for (const s of spawns) {
       const d = defs[s.type]; if (!d) continue;
-      const key = `${game.world.index}:${s.x}:${s.y}`;
+      const key = `${game.world.roomId ?? game.world.index}:${s.x}:${s.y}`;
       if (s.type !== 'S' && game.collected.has(key)) continue; // déjà ramassé (sauvegardé)
       // sprites animés des packs (coffre, cristal, miroir) ; sans image → carré de couleur
       const chest = ['chest_wood', 'chest_iron', 'chest_gold'][Math.min(2, game.world.index)];
@@ -58,7 +58,7 @@ export class Interactables {
         if (!it.active) {
           for (const o of this.list) if (o.kind === 'save') { o.active = false; o.mesh.material.color.setHex(o.anim ? 0x9aa8c0 : 0x6ee7ff); }
           it.active = true; it.mesh.material.color.setHex(0xffffff); g.fx.sprite('fx_shine', it.x, it.y + 1.2, { w: 3, fps: 16, color: 0x6ee7ff });
-          p.spawnPoint = { x: it.x, y: it.y }; p.hp = p.maxHp;
+          p.spawnPoint = { x: it.x, y: it.y, room: g.world.roomId }; p.hp = p.maxHp;
           g.audio?.sfx('ui'); g.save(); g.say('Sauvegardé');
         }
       } else if (it.kind === 'orb') {
