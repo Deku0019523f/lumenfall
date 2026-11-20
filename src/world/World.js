@@ -8,6 +8,7 @@ import { Boss } from '../bosses/Boss.js';
 import { Npc } from '../objects/Npc.js';
 import { STORY } from '../story/story.js';
 import { Interactables } from '../objects/Interactables.js';
+import { Walls } from './Walls.js';
 
 // Gère le chapitre courant : construit la carte, les ennemis, le boss, et nettoie le précédent.
 export class World {
@@ -95,6 +96,7 @@ export class World {
     const bgTex = g.assets?.bg?.[ch.theme.bg?.image];
     if (bgTex) this.bg = new Background(g.scene, bgTex, ch.theme.bg.tint);
     g.camera.setBounds(this.level.bounds);
+    this.walls = new Walls(g, this.level, roomId, ch.theme);   // murs fissurés (X)
 
     g.portals = new Portals(g, this.level.spawns, ch.portal);
     for (const s of this.level.spawns) {
@@ -118,6 +120,7 @@ export class World {
 
   update(dt) {
     this.#checkExits();
+    this.walls?.update();
     this.level?.update(dt);
     this.bg?.update(this.game.camera, this.level);
   }
@@ -133,7 +136,7 @@ export class World {
     for (const s of g.enemyShots) g.scene.remove(s.mesh);
     g.projectiles = []; g.enemyShots = [];
     g.inter?.dispose();
-    this.bg?.dispose(); this.bg = null;
+    this.bg?.dispose(); this.bg = null; this.walls = null;
     this.level?.dispose(); this.level = null;
   }
 }
