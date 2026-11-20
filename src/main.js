@@ -17,7 +17,7 @@ import { INTRO, ENDING, STORY } from './story/story.js';
 import { Music } from './audio/Music.js';
 import { loadAssets } from './assets/Assets.js';
 
-const SAVE_VERSION = 3;
+const SAVE_VERSION = 4;
 
 async function boot() {
   const assets = await loadAssets();
@@ -38,14 +38,14 @@ async function boot() {
     audio, scene, camera, fx, input, assets, hud, dialogue,
     world: null, level: null, player: null, boss: null, miniBoss: null, inter: null, npcs: [],
     enemies: [], projectiles: [], enemyShots: [],
-    collected: new Set(), bossDead: {}, seen: new Set(), unlocked: 0, transitioning: false, hitStop: 0,
+    collected: new Set(), visited: new Set(), bossDead: {}, seen: new Set(), unlocked: 0, transitioning: false, hitStop: 0,
     say: (t, d) => hud.say(t, d),
     save(extra = {}) {
       const p = this.player;
       SaveSystem.write({
         v: SAVE_VERSION, chapter: this.world.index, spawn: { x: p.spawnPoint.x, y: p.spawnPoint.y },
         maxHp: p.maxHp, abilities: p.abilities, collected: [...this.collected], bossDead: this.bossDead,
-        shards: p.shards, skills: p.skills, quests: this.quests.toJSON(), seen: [...this.seen], unlocked: this.unlocked, ...extra,
+        shards: p.shards, skills: p.skills, quests: this.quests.toJSON(), seen: [...this.seen], unlocked: this.unlocked, rooms: [...this.visited], ...extra,
       });
     },
     onPlayerDeath() { setTimeout(() => { game.player.respawn(); hud.say('Renaissance'); }, 1200); },
@@ -75,17 +75,17 @@ async function boot() {
   game.player = new Player(scene, 0, 0, assets);
   const P = game.player;
 
-  // --- Progression (sauvegarde v3 ; v2 acceptée)
+  // --- Progression (sauvegarde v4 : + salles visitées ; v2 et v3 acceptées)
   function applyProgress(d = {}) {
     P.maxHp = d.maxHp ?? 5; P.hp = P.maxHp;
     P.abilities = { dash: true, doubleJump: false, wall: false, ...(d.abilities || {}) };
     P.shards = d.shards || 0; P.energy = 0;
     applySkills(P, d.skills || []);
-    game.collected = new Set(d.collected || []); game.bossDead = d.bossDead || {};
+    game.visited = new Set(d.rooms || []); game.collected = new Set(d.collected || []); game.bossDead = d.bossDead || {};
     game.seen = new Set(d.seen || []); game.unlocked = d.unlocked ?? d.chapter ?? 0;
     game.quests.load(d.quests);
   }
-  const loadSave = () => { const s = SaveSystem.load(); if (s && (s.v === 2 || s.v === 3)) return s; if (s) SaveSystem.clear(); return null; };
+  const loadSave = () => { const s = SaveSystem.load(); if (s && (s.v >= 2 && s.v <= 4)) return s; if (s) SaveSystem.clear(); return null; };
   const urlCh = parseInt(new URLSearchParams(location.search).get('chapitre'), 10);
   const dev = urlCh >= 1 && urlCh <= CHAPTERS.length;
 

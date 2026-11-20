@@ -1,9 +1,14 @@
 import { map as map1 } from './chapter1.js';
 import { map as map2 } from './chapter2.js';
 import { map as map3 } from './chapter3.js';
+import { ROOMS as R1 } from './rooms_racines.js';
+import { ROOMS as R2 } from './rooms_plaines.js';
+import { ROOMS as R3 } from './rooms_village.js';
 
-// Un chapitre = une carte + un thème visuel + des ennemis + un boss.
-// Pour ajouter un chapitre : tools/make_maps.py (carte) → une entrée ici → c'est tout.
+// Salles de chaque zone (monde interconnecté, voir monde.md) — générées par tools/make_world.py
+export const ZONES = { racines: R1, plaines: R2, village: R3 };
+
+// Un chapitre = une zone (salles) + un thème visuel + des ennemis + un boss.
 // roster : qui occupe quels emplacements d'ennemis de la carte (lettres c f k h w r) — voir src/enemies/Bestiary.js.
 export const CHAPTERS = [
   {
@@ -14,7 +19,7 @@ export const CHAPTERS = [
     roster: { c: ['slime', 'rat', 'rat'], f: ['bat', 'spore'], k: 'cracheur' },
     boss: { name: 'La Gardienne des Racines', strip: 'boss_poison', spriteH: 3.9, hp: 48, w: 2.6, h: 2.8, color: '#2f6b3a', moves: ['roots', 'volley', 'summon', 'charge'] },
     mini: { name: 'Le Gardien du Pont', strip: 'slime_green', spriteH: 2.6, hp: 20, w: 2.0, h: 1.8, color: '#2f6b3a', tint: 0xb6ff8a, shards: 25, moves: ['charge', 'roots'] },
-    unlocks: ['dash'],
+    unlocks: ['dash'], rooms: 'racines', startRoom: 'racines/entree',
   },
   {
     title: 'Les Plaines du Vent', subtitle: 'Chapitre 2',
@@ -24,7 +29,7 @@ export const CHAPTERS = [
     roster: { c: ['slimeOr', 'rat'], f: ['bat', 'batGrande'], k: ['cracheur', 'verFeu'] },
     boss: { name: 'Le Souffle Ancien', strip: 'boss_wind', spriteH: 3.6, hp: 62, w: 2.4, h: 2.8, color: '#3a8a9a', moves: ['gust', 'blades', 'leap', 'burst', 'charge'] },
     mini: { name: 'La Sentinelle du Vent', strip: 'boss_wind', spriteH: 2.6, hp: 28, w: 1.8, h: 2.0, color: '#3a8a9a', tint: 0xcfefff, shards: 30, moves: ['blades', 'leap'] },
-    unlocks: ['wall'],
+    unlocks: ['wall'], rooms: 'plaines', startRoom: 'plaines/entree',
   },
   {
     title: 'Le Village Oublié', subtitle: 'Chapitre 3',
@@ -34,6 +39,6 @@ export const CHAPTERS = [
     roster: { c: ['slime', 'rat'], f: ['batGrande', 'bat'], k: ['cracheur', 'verFeu'], h: ['sauteur', 'mimic'] },
     boss: { name: 'Le Roi Gélatine', strip: 'slime_orange', spriteH: 3.4, hp: 85, w: 3.4, h: 2.6, color: '#8a5a1f', tint: 0xffb0b0, moves: ['jump', 'multijump', 'rain', 'summon', 'charge', 'burst'] },
     mini: { name: 'Le Veilleur Gelé', strip: 'slime_orange', spriteH: 2.8, hp: 34, w: 2.2, h: 1.8, color: '#4a6a9a', tint: 0x9fc8ff, shards: 35, moves: ['multijump', 'volley'] },
-    unlocks: [],
+    unlocks: [], rooms: 'village', startRoom: 'village/place',
   },
 ];
