@@ -143,49 +143,52 @@ U4.exit('W', 2, 5, 'cavern'); U4.exit('N', 34, 36, 'souche', gate='puits')
 # LES PLAINES DU VENT (chapitre 2) — deux colonnes de salles qui se répondent, un puits central, un sous-terrain
 # =====================================================================================================
 CUR['zone'] = 'plaines'
-pe = room('entree', 'Le Départ des Plaines', 46, 1, 0)
-pe.put(3, 2, 'P'); pe.climb(22, 32, 2, 20, 26, 28); pe.foes([14, 38], 'cc'); pe.deco()
-pe.exit('E', 2, 5, 'secret'); pe.exit('N', 26, 28, 'camp')
-pc = room('camp', 'Le Camp Abandonné', 52, 1, 1)
-pc.put(10, 2, 'S'); pc.put(16, 2, 'N'); pc.climb(34, 44, 2, 20, 38, 40); pc.foes([24, 30], 'cc'); pc.deco()
-pc.exit('S', 26, 28, 'entree'); pc.exit('W', 2, 5, 'gouffre'); pc.exit('E', 2, 5, 'souterrain'); pc.exit('N', 38, 40, 'puits', gate='vent')
+# Carte de référence (illustration de l'utilisateur) : départ à gauche, sanctuaire, camp, gouffre (défi), passage secret,
+# cascade centrale, caverne (récompense), falaises verticales, souterrain (violet), Tour du Vent en haut.
+pd = room('entree', 'Le Point de Départ', 46, 0, 2)
+pd.put(3, 2, 'P'); pd.foes([14, 38], 'cc'); pd.deco()
+pd.exit('E', 2, 5, 'sanctuaire'); pd.exit('S', 22, 24, 'gouffre')
 pg = room('gouffre', 'Le Gouffre aux Piques', 64, 0, 1)
 pg.islands(14, 34); pg.pit(40, 43); pg.climb(48, 58, 2, 20, 51, 53); pg.foes([8, 38, 46], 'ckk'); pg.deco()
-pg.exit('E', 2, 5, 'camp'); pg.exit('N', 51, 53, 'plateformes')
-ps = room('souterrain', 'Le Sous-Terrain', 58, 2, 1)
-ps.ceiling(1, 38, 14); ps.ceiling(44, 56, 14); ps.climb(36, 46, 2, 20, 40, 42); ps.foes([12, 22, 50], 'cch')
-ps.exit('W', 2, 5, 'camp'); ps.exit('N', 40, 42, 'caverne'); ps.exit('S', 20, 22, 'secret')
-ps.fill(19, 23, 2, 2, '.')
-px = room('secret', 'Le Passage Secret', 44, 2, 0)
-px.ceiling(1, 28, 14); px.ceiling(34, 42, 14); px.climb(26, 36, 2, 20, 30, 32); px.on(10, 'C'); px.foes([16, 22], 'cc')
-px.exit('W', 2, 5, 'entree'); px.exit('N', 30, 32, 'souterrain')
-pp = room('plateformes', 'Les Plateformes du Vent', 62, 0, 2)
-pp.islands(18, 32); pp.climb(36, 46, 2, 20, 40, 42)
-pp.foes([6, 28, 56], 'ckf'); pp.deco()
-pp.exit('S', 6, 8, 'gouffre'); pp.exit('N', 40, 42, 'falaise')
-pv = room('caverne', 'La Caverne Cachée', 56, 2, 2)
-pv.ceiling(1, 14, 14); pv.ceiling(24, 54, 14); pv.climb(14, 24, 2, 20, 36, 38); pv.foes([6, 40, 48], 'cch')
-pv.exit('S', 20, 22, 'souterrain'); pv.exit('N', 36, 38, 'tour')
-pf = room('falaise', 'La Falaise', 60, 0, 3)
-pf.pit(14, 20); pf.climb(8, 18, 2, 20, 10, 12); pf.foes([28, 36, 50], 'ckf'); pf.deco()
-pf.exit('S', 30, 32, 'plateformes'); pf.exit('E', 2, 5, 'pont'); pf.exit('N', 10, 12, 'hauteur')
-pb = room('pont', 'Le Pont du Vent', 62, 1, 3)
+pg.exit('E', 2, 5, 'camp'); pg.exit('N', 51, 53, 'entree')
+pa = room('sanctuaire', 'Le Sanctuaire', 56, 1, 2)
+pa.put(10, 2, 'S'); pa.climb(36, 46, 2, 20, 40, 42); pa.foes([22, 30], 'cc'); pa.deco()
+pa.exit('W', 2, 5, 'entree'); pa.exit('E', 2, 5, 'centre'); pa.exit('N', 40, 42, 'secret'); pa.exit('S', 14, 16, 'camp')
+pc = room('camp', 'Le Camp Abandonné', 52, 1, 1)
+pc.put(10, 2, 'S'); pc.put(16, 2, 'N'); pc.climb(34, 44, 2, 20, 38, 40); pc.foes([24, 30], 'cc'); pc.deco()
+pc.exit('N', 38, 40, 'sanctuaire'); pc.exit('W', 2, 5, 'gouffre'); pc.exit('E', 2, 5, 'souterrain')
+ps = room('souterrain', 'Le Passage Souterrain', 58, 2, 1)
+ps.ceiling(1, 34, 14); ps.ceiling(48, 56, 14); ps.climb(36, 46, 2, 20, 40, 42); ps.foes([12, 22], 'cch')
+ps.exit('W', 2, 5, 'camp'); ps.exit('E', 2, 5, 'bas'); ps.exit('N', 40, 42, 'centre')
+pm = room('centre', 'Le Cœur des Plaines', 60, 2, 2)
+pm.put(22, 2, 'S'); pm.climb(34, 44, 2, 20, 38, 40); pm.foes([28, 50], 'ckf'); pm.deco()
+pm.exit('W', 2, 5, 'sanctuaire'); pm.exit('E', 2, 5, 'cascade'); pm.exit('N', 38, 40, 'pont'); pm.exit('S', 12, 14, 'souterrain')
+pk = room('secret', 'Le Passage Secret', 44, 1, 3)
+pk.ceiling(1, 42, 14); pk.on(30, 'C'); pk.foes([20, 24], 'cc')
+pk.exit('S', 8, 10, 'sanctuaire'); pk.exit('E', 2, 5, 'pont')
+pb = room('pont', 'Le Pont du Vent', 62, 2, 3)
 pb.islands(14, 30); pb.put(40, 2, 'M'); pb.climb(44, 54, 2, 20, 47, 49); pb.put(8, 2, 'S'); pb.foes([34], 'c'); pb.deco()
-pb.exit('W', 2, 5, 'falaise'); pb.exit('E', 2, 5, 'tour'); pb.exit('S', 34, 36, 'puits'); pb.exit('N', 47, 49, 'suspendu')
-pw = room('puits', 'Le Puits des Vents', 40, 1, 2)
-pw.climb(14, 24, 2, 20, 18, 20); pw.foes([32], 'c')
-pw.exit('N', 18, 20, 'pont'); pw.exit('S', 6, 8, 'camp', opens='vent')
-pt = room('tour', 'La Tour en Ruine', 56, 2, 3)
-pt.plat(22, 25, 3); pt.plat(26, 30, 4); pt.plat(32, 36, 6); pt.put(34, 7, 'C'); pt.foes([12, 18, 44, 50], 'cckh'); pt.deco()
-pt.exit('W', 2, 5, 'pont'); pt.exit('S', 30, 32, 'caverne')
-ph = room('hauteur', 'La Hauteur du Vent', 48, 0, 4)
-ph.put(22, 2, 'S'); ph.plat(24, 27, 3); ph.plat(28, 32, 4); ph.plat(34, 38, 6); ph.put(36, 7, 'W'); ph.foes([12, 42], 'ckf'); ph.deco()
-ph.exit('S', 10, 12, 'falaise'); ph.exit('E', 2, 5, 'suspendu')
-pu = room('suspendu', 'Le Passage Suspendu', 64, 1, 4)
+pb.exit('W', 2, 5, 'secret'); pb.exit('E', 2, 5, 'tour'); pb.exit('S', 34, 36, 'centre'); pb.exit('N', 47, 49, 'suspendu')
+pu = room('suspendu', 'Le Passage Suspendu', 64, 2, 4)
 pu.islands(16, 32); pu.put(8, 2, 'S'); pu.foes([40, 46], 'ck'); pu.deco()
-pu.exit('W', 2, 5, 'hauteur'); pu.exit('E', 2, 5, 'boss'); pu.exit('S', 46, 48, 'pont')
-pn = room('boss', 'La Tour du Vent', 52, 2, 4)
+pu.exit('E', 2, 5, 'boss'); pu.exit('S', 46, 48, 'pont')
+pn = room('boss', 'La Tour du Vent', 52, 3, 4)
 pn.put(8, 2, 'S'); pn.put(38, 2, 'B'); pn.exit('W', 2, 5, 'suspendu')
+pt = room('tour', 'La Tour en Ruine', 56, 3, 3)
+pt.plat(22, 25, 3); pt.plat(26, 30, 4); pt.plat(32, 36, 6); pt.put(34, 7, 'C'); pt.foes([12, 18, 44, 50], 'cckh'); pt.deco()
+pt.exit('W', 2, 5, 'pont'); pt.exit('S', 30, 32, 'cascade', opens='vent')
+pv = room('cascade', 'La Cascade', 56, 3, 2)
+pv.ceiling(1, 14, 14); pv.ceiling(28, 54, 14); pv.put(40, 2, 'S'); pv.climb(16, 26, 2, 20, 20, 22); pv.foes([6, 34, 48], 'cch')
+pv.exit('W', 2, 5, 'centre'); pv.exit('E', 2, 5, 'caverne'); pv.exit('N', 20, 22, 'tour', gate='vent')
+pe = room('caverne', 'La Caverne Cachée', 50, 4, 2)
+pe.pit(10, 13); pe.plat(16, 19, 3); pe.plat(22, 26, 5); pe.put(24, 6, 'C'); pe.foes([34, 44], 'cc'); pe.deco()
+pe.exit('W', 2, 5, 'cascade'); pe.exit('S', 38, 40, 'falaises')
+pz = room('bas', 'Le Souterrain Profond', 58, 3, 1)
+pz.ceiling(1, 56, 14); pz.islands(16, 30); pz.put(40, 2, 'S'); pz.foes([36, 46], 'cch')
+pz.exit('W', 2, 5, 'souterrain'); pz.exit('E', 2, 5, 'falaises')
+pf = room('falaises', 'Les Falaises du Vent', 44, 4, 1)
+pf.climb(8, 18, 2, 20, 10, 12); pf.put(16, 6, 'W'); pf.foes([30, 38], 'ckf'); pf.deco()
+pf.exit('W', 2, 5, 'bas'); pf.exit('N', 10, 12, 'caverne')
 
 # =====================================================================================================
 # LE VILLAGE OUBLIÉ (chapitre 3) — une place centrale, des rues, des toits, des égouts ; le manoir du Roi Gélatine
@@ -314,6 +317,18 @@ def check(zn, start):
         if not changed: break
     return entries, reach, flags, [r for r in rooms if r not in entries]
 
+def exit_report(zn, entries):
+    """sorties jamais franchissables à pied depuis les points d'arrivée connus (hors double saut) — les portes à drapeau comptent comme ouvertes."""
+    rooms, bad = ZONES[zn], []
+    for rid, r in rooms.items():
+        seen, used = explore(r, entries.get(rid, []))
+        for e in r.exits:
+            if e['side'] in 'EW': go = any(x >= r.W - 2 if e['side'] == 'E' else x <= 1 for (x, y) in seen if e['y0'] <= y <= e['y1'])
+            elif e['side'] == 'N': go = any(sd == 'N' and e['x0'] <= x <= e['x1'] for sd, x in used)
+            else: go = any(sd == 'S' and e['x0'] <= x <= e['x1'] for sd, x in used) or any(e['x0'] <= x <= e['x1'] and y <= 2 for x, y in seen if not support(r, x, y))
+            if not go: bad.append((rid, e['side'], e['to'].split('/')[1]))
+    return bad
+
 START = {'racines': ('entree', (3, 2)), 'plaines': ('entree', (3, 2)), 'village': ('place', (3, 2))}
 NEEDS_DOUBLE_JUMP = {'racines': {'hauteur'}, 'plaines': set(), 'village': {'grenier', 'crypte'}}
 FILES = {'racines': ('rooms_racines.js', 'Racines Mousseuses'), 'plaines': ('rooms_plaines.js', 'Plaines du Vent'), 'village': ('rooms_village.js', 'Village Oublié')}
@@ -330,6 +345,8 @@ if __name__ == '__main__':
                 for x in range(r.W):
                     if r.g[y][x] in 'CSMBDW' and not any((x + dx, y) in reach[rid] for dx in (-1, 0, 1)) and rid not in NEEDS_DOUBLE_JUMP[zn]: bad.append((rid, r.g[y][x], x, y))
         print(f'[{zn}] {len(rooms)} salles | drapeaux {sorted(flags)} | non atteintes : {missing or "aucune"} | objets inaccessibles : {bad or "aucun"}')
+        blocked = exit_report(zn, entries)
+        print('   sorties non franchissables à pied :', blocked or 'aucune')
         ok &= not missing and not bad
         fn, title = FILES[zn]
         out = [f"// Labyrinthe : {title} — généré par tools/make_world.py (ne pas éditer à la main). Voir monde.md.", "import { decode } from './rle.js';", "", "export const ROOMS = {"]
