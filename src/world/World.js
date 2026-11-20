@@ -9,11 +9,11 @@ import { Npc } from '../objects/Npc.js';
 import { STORY } from '../story/story.js';
 import { Interactables } from '../objects/Interactables.js';
 
-// Gère le chapitre courant : construit la carte (ou la salle), les ennemis, le boss, et nettoie le précédent.
+// Gère le chapitre courant : construit la carte, les ennemis, le boss, et nettoie le précédent.
 export class World {
   constructor(game) { this.game = game; this.level = null; this.bg = null; this.index = -1; this.roomId = null; this.changing = false; }
 
-  // fromSave : { x, y, room } point de réapparition à utiliser (sinon départ de la carte)
+  // fromSave : { x, y } point de réapparition à utiliser (sinon départ de la carte)
   load(index, spawn = null) {
     const ch = CHAPTERS[index];
     if (ch.rooms) return this.loadRoom(spawn?.room && ZONES[ch.rooms][spawn.room] ? spawn.room : ch.startRoom, null, spawn, index);
@@ -56,7 +56,7 @@ export class World {
     if (!room || this.changing || g.transitioning || g.dialogue?.active || g.menu?.open || p.dead || document.body.dataset.started !== '1') return;
     const inX = (e) => p.x >= e.x0 - 0.2 && p.x <= e.x1 + 1.2;
     let ex = null, side = null;
-    if (p.x < 0.35 || p.x > lv.w - 1.35) { side = p.x < 0.35 ? 'W' : 'E'; ex = room.exits.find((e) => e.side === side && p.y >= e.y0 - 0.5 && p.y <= e.y1 + 1); }
+    if (p.x < 0.5 || p.x > lv.w - 1.35) { side = p.x < 0.5 ? 'W' : 'E'; ex = room.exits.find((e) => e.side === side && p.y >= e.y0 - 0.5 && p.y <= e.y1 + 1); }
     else if (p.y > lv.h - 1.6) { side = 'N'; ex = room.exits.find((e) => e.side === 'N' && inX(e) && !(e.gate && !g.collected.has('flag:' + e.gate))); }
     else if (p.y < 0.5) { side = 'S'; ex = room.exits.find((e) => e.side === 'S' && inX(e)); }
     if (!ex) return;
