@@ -4,6 +4,7 @@ Chaque salle = grille 'y vers le haut'. Sorties dans 4 directions :
   E/W {side,y0,y1}      : franchir le bord gauche/droit entre les rangées y0..y1
   N/S {side,x0,x1}      : monter par le plafond / tomber par un trou du sol (x0..x1)
   gate  : l'ouverture est murée tant que le drapeau n'est pas levé ; opens : traverser cette sortie lève le drapeau.
+  X dans une carte = mur fissuré (se brise d'un coup de lame, voir src/world/Walls.js)
 Usage : python3 tools/make_world.py   (génère les fichiers + vérifie l'accessibilité : sans double saut tout sauf les secrets)"""
 import os, re, json, random, sys
 
@@ -75,6 +76,9 @@ class R:
                 for x in range(e['x0'], e['x1'] + 1): s.g[s.H - 1][x] = '.'
             else:
                 for x in range(e['x0'], e['x1'] + 1): s.g[1][x] = s.g[0][x] = '.'
+    def wall(s, x0, x1, y0, y1): s.fill(x0, x1, y0, y1, 'X')          # mur fissuré : se brise d'un coup de lame
+    def pocket(s, xl, xr, cx):                                       # alcôve close (mur fissuré à gauche) contenant un coffre en cx
+        s.fill(xl + 1, xr - 1, 2, 3, '.'); s.fill(xl, xr, 4, 4, '#'); s.fill(xr, xr, 2, 4, '#'); s.fill(xl, xl, 2, 3, 'X'); s.put(cx, 2, 'C')
     def rows(s): return [''.join(s.g[y]) for y in range(s.H - 1, -1, -1)]
 
 def room(*a, **k):
@@ -164,14 +168,18 @@ pm = room('centre', 'Le Cœur des Plaines', 60, 2, 2)
 pm.put(22, 2, 'S'); pm.climb(34, 44, 2, 20, 38, 40); pm.foes([28, 50], 'ckf'); pm.deco()
 pm.exit('W', 2, 5, 'sanctuaire'); pm.exit('E', 2, 5, 'cascade'); pm.exit('N', 38, 40, 'pont'); pm.exit('S', 12, 14, 'souterrain')
 pk = room('secret', 'Le Passage Secret', 44, 1, 3)
-pk.ceiling(1, 42, 14); pk.on(30, 'C'); pk.foes([20, 24], 'cc')
+pk.ceiling(1, 42, 14); pk.foes([16, 22], 'cc'); pk.pocket(28, 36, 32)
 pk.exit('S', 8, 10, 'sanctuaire'); pk.exit('E', 2, 5, 'pont')
 pb = room('pont', 'Le Pont du Vent', 62, 2, 3)
 pb.islands(14, 30); pb.put(40, 2, 'M'); pb.climb(44, 54, 2, 20, 47, 49); pb.put(8, 2, 'S'); pb.foes([34], 'c'); pb.deco()
 pb.exit('W', 2, 5, 'secret'); pb.exit('E', 2, 5, 'tour'); pb.exit('S', 34, 36, 'centre'); pb.exit('N', 47, 49, 'suspendu')
 pu = room('suspendu', 'Le Passage Suspendu', 64, 2, 4)
 pu.islands(16, 32); pu.put(8, 2, 'S'); pu.foes([40, 46], 'ck'); pu.deco()
-pu.exit('E', 2, 5, 'boss'); pu.exit('S', 46, 48, 'pont')
+pu.wall(1, 2, 2, 5)
+pu.exit('W', 2, 5, 'belvedere'); pu.exit('E', 2, 5, 'boss'); pu.exit('S', 46, 48, 'pont')
+pq = room('belvedere', 'Le Belvédère', 48, 1, 4)
+pq.put(10, 2, 'S'); pq.plat(24, 27, 3); pq.plat(28, 32, 4); pq.plat(34, 38, 6); pq.put(36, 7, 'C'); pq.foes([14, 40], 'ff'); pq.deco()
+pq.exit('E', 2, 5, 'suspendu')
 pn = room('boss', 'La Tour du Vent', 52, 3, 4)
 pn.put(8, 2, 'S'); pn.put(38, 2, 'B'); pn.exit('W', 2, 5, 'suspendu')
 pt = room('tour', 'La Tour en Ruine', 56, 3, 3)
