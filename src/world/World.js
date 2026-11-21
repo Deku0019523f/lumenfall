@@ -9,6 +9,7 @@ import { Npc } from '../objects/Npc.js';
 import { STORY } from '../story/story.js';
 import { Interactables } from '../objects/Interactables.js';
 import { Walls } from './Walls.js';
+import { applyBalance } from '../systems/Balance.js';
 
 // Gère le chapitre courant : construit la carte, les ennemis, le boss, et nettoie le précédent.
 export class World {
@@ -100,10 +101,10 @@ export class World {
 
     g.portals = new Portals(g, this.level.spawns, ch.portal);
     for (const s of this.level.spawns) {
-      if (ENEMY_LETTERS.includes(s.type)) g.enemies.push(spawnEnemy(s.type, g, s.x, s.y, ch));
-      else if (s.type === 'B' && !g.bossDead[index]) { g.boss = new Boss(g, s.x, s.y, ch.boss); g.enemies.push(g.boss); }
+      if (ENEMY_LETTERS.includes(s.type)) g.enemies.push(applyBalance(spawnEnemy(s.type, g, s.x, s.y, ch), 'enemy'));
+      else if (s.type === 'B' && !g.bossDead[index]) { g.boss = applyBalance(new Boss(g, s.x, s.y, ch.boss), 'boss'); g.enemies.push(g.boss); }
       else if (s.type === 'B') g.portals.openExit(s.x, s.y); // boss déjà vaincu : le portail de sortie reste ouvert
-      else if (s.type === 'M' && !g.bossDead['m' + index]) { const m = new Boss(g, s.x, s.y, { ...ch.mini, mini: true }); g.miniBoss = m; g.enemies.push(m); }
+      else if (s.type === 'M' && !g.bossDead['m' + index]) { const m = new Boss(g, s.x, s.y, { ...ch.mini, mini: true }); applyBalance(m, 'mini'); g.miniBoss = m; g.enemies.push(m); }
       else if (s.type === 'N') g.npcs.push(new Npc(g, s.x, s.y, STORY[index].npc));
     }
     g.hazards = g.hazards || new Hazards(g);
