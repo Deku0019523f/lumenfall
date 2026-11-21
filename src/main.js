@@ -10,6 +10,7 @@ import { Shards } from './objects/Shards.js';
 import { Input } from './ui/Input.js';
 import { HUD } from './ui/HUD.js';
 import { Dialogue } from './ui/Dialogue.js';
+import { Cinematic } from './ui/Cinematic.js';
 import { Menu } from './ui/Menu.js';
 import { World } from './world/World.js';
 import { CHAPTERS } from './levels/chapters.js';
@@ -67,6 +68,7 @@ async function boot() {
     },
   };
   game.onExitPortal = () => endChapter();
+  game.cine = new Cinematic(game);
   game.world = new World(game);
   game.shards = new Shards(game);
   game.quests = new Quests(game);
@@ -128,7 +130,8 @@ async function boot() {
       const ch = game.world.load(0, null);
       hud.title(ch.subtitle, ch.title);
       game.seen.add('intro'); game.seen.add('arr:0');
-      dialogue.start(INTRO, () => dialogue.start(STORY[0].arrival));
+      const afterCine = () => dialogue.start(INTRO.slice(5), () => dialogue.start(STORY[0].arrival));
+      game.cine.play(afterCine);
     },
     chapter(i) {
       const s = loadSave(); if (s) applyProgress(s);
