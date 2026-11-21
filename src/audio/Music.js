@@ -5,22 +5,51 @@ const SCALES = {
   mixo: [0, 2, 4, 5, 7, 9, 10], phryg: [0, 1, 3, 5, 7, 8, 10],
 };
 
-// root : note MIDI ; prog : degrés des accords (1 par mesure) ; arp : probabilité d'une note d'arpège par croche
+// Thèmes composés. root : note MIDI de la tonique ; prog : degré de l'accord à chaque mesure (boucle) ; mel : mélodie, 1 chaîne de 16 doubles-croches par mesure
+// Notation mélodie : chiffre 1-7 = degré de la gamme (1 = tonique, une octave au-dessus de root), ' = octave au-dessus, , = octave en dessous, . = silence, - = note tenue
 const TRACKS = {
-  menu:  { root: 57, mode: 'minor', bpm: 58, prog: [0, 5, 3, 4], arp: 0.55, lead: 0.5, pad: 'sine', drums: 0, bass: 1 },
-  ch0:   { root: 50, mode: 'dorian', bpm: 72, prog: [0, 3, 5, 4], arp: 0.7, lead: 0.4, pad: 'triangle', drums: 0, bass: 1 },
-  ch1:   { root: 55, mode: 'mixo', bpm: 96, prog: [0, 4, 5, 3], arp: 0.85, lead: 0.55, pad: 'triangle', drums: 1, bass: 1 },
-  ch2:   { root: 52, mode: 'phryg', bpm: 80, prog: [0, 5, 6, 4], arp: 0.7, lead: 0.35, pad: 'sawtooth', drums: 0, bass: 1 },
-  mini:  { root: 47, mode: 'minor', bpm: 116, prog: [0, 5, 3, 6], arp: 0.9, lead: 0.3, pad: 'sawtooth', drums: 2, bass: 2 },
-  boss:  { root: 45, mode: 'minor', bpm: 132, prog: [0, 0, 5, 6, 0, 0, 3, 4], arp: 1, lead: 0.5, pad: 'sawtooth', drums: 3, bass: 2 },
+  // Menu : mélancolique et lumineux (la mineur) — flûte douce sur nappes
+  menu: { root: 57, mode: 'minor', bpm: 62, prog: [0, 5, 2, 6, 0, 3, 5, 4], inst: 'flute', pad: 'sine', arp: 0.35, drums: 0, bass: 1,
+    mel: ['1 - - - 3 - - - 5 - - - 3 - 1 -', '4 - - - 6 - - - 5 - - - 4 - 3 -', '3 - - - 5 - - - 7 - - - 5 - 3 -', '2 - - - 4 - 5 - 7 - - - - - . .',
+          "1' - - - 7 - 6 - 5 - - - 3 - - -", '4 - - - 6 - - - 4 - - - 2 - 1 -', '6 - - - 5 - 4 - 3 - - - 4 - - -', '5 - - - 7 - - - 5 - - - - - - -'] },
+  // Racines Mousseuses : curieux et feutré (ré dorien) — pizzicati et petite flûte
+  ch0: { root: 50, mode: 'dorian', bpm: 76, prog: [0, 0, 3, 4, 0, 6, 3, 4], inst: 'pluck', pad: 'triangle', arp: 0.3, drums: 0, bass: 1,
+    mel: ['1 . 3 . 5 - 3 . 1 . 3 . 2 - . .', '1 . 3 . 5 - 3 . 6 - 5 - . . . .', "4 . 6 . 1' - 6 . 4 . 6 . 5 - . .", "5 . 7 . 2' - 7 . 5 . 7 . 6 - 5 .",
+          '1 . 3 . 5 - 3 . 1 . 3 . 2 - . .', "7 . 2' . 4' - 2' . 7 . 2' . 1' - . .", "4 . 6 . 1' - 6 . 1' . 2' . 3' - . .", '5 - - - 3 - 2 - 1 - - - . . . .'] },
+  // Plaines du Vent : large et aventureux (sol mixolydien) — flûte qui s'envole, percussions légères
+  ch1: { root: 55, mode: 'mixo', bpm: 100, prog: [0, 6, 3, 0, 0, 6, 3, 4], inst: 'flute', pad: 'triangle', arp: 0.5, drums: 1, bass: 1,
+    mel: ["1 - . 3 - 5 - 3 5 - - - 1' - - -", "7 - . 2' - 4' - 2' 7 - - - 5 - - -", "4 - . 6 - 1' - 6 4 - - - 6 - 5 -", '5 - - - 3 - 1 - 2 - 3 - 5 - - -',
+          "1 - . 3 - 5 - 3 5 - 1' - 3' - 1' -", "7 - . 2' - 4' - 2' 4' - 5' - 4' - 2' -", "4 - . 6 - 1' - 6 1' - 2' - 3' - 2' -", "5 - - - 7 - - - 2' - - - . . 1' ."] },
+  // Village Oublié : boîte à musique inquiétante (mi phrygien) — cloche sur cordes graves
+  ch2: { root: 52, mode: 'phryg', bpm: 84, prog: [0, 1, 0, 6, 0, 5, 1, 0], inst: 'bell', pad: 'sawtooth', arp: 0.25, drums: 0, bass: 1,
+    mel: ['1 . . 3 . . 5 . . 3 . . 2 . 1 .', '2 . . 4 . . 6 . . 4 . . 3 . 2 .', '1 . . 3 . . 5 . . 7 . . 5 . 3 .', "7 . . 2' . . 4 . . 2' . . 7 . 6 .",
+          "1' . . 7 . . 5 . . 3 . . 5 . . .", "6 . . 1' . . 3' . . 1' . . 6 . 5 .", "2 . . 4 . . 6 . . 2' . . 1' . 7 .", '1 - - - - - - - 5 - - - 3 - 1 -'] },
+  // Gardien : tendu, marteLé (si mineur)
+  mini: { root: 47, mode: 'minor', bpm: 118, prog: [0, 0, 5, 6, 0, 0, 3, 4], inst: 'lead', pad: 'sawtooth', arp: 0.6, drums: 2, bass: 2,
+    mel: ['1 . 1 . 3 . 5 . 3 . 1 . 5, . . .', '1 . 1 . 3 . 5 . 6 . 5 . 3 . . .', "6 . 6 . 1' . 3' . 1' . 6 . 5 . . .", "7 . 7 . 2' . 4' . 2' . 7 . 5 . . .",
+          '1 . 1 . 3 . 5 . 3 . 1 . 5, . . .', '1 . 1 . 3 . 5 . 6 . 5 . 3 . . .', "4 . 4 . 6 . 1' . 6 . 4 . 6 . . .", "5 . 7 . 2' . 5' . 2' . 7 . 5 . 5, ."] },
+  // Boss : épique, implacable (la mineur)
+  boss: { root: 45, mode: 'minor', bpm: 140, prog: [0, 0, 5, 6, 0, 0, 3, 4], inst: 'lead', pad: 'sawtooth', arp: 0.8, drums: 3, bass: 2,
+    mel: ["1' . 1' . 7 . 1' . 3' . 1' . 7 . 5 .", "1' . 1' . 7 . 1' . 5' . 3' . 2' . 1' .", "6 . 6 . 1' . 3' . 6' . 3' . 1' . 6 .", "7 . 7 . 2' . 4' . 7' . 4' . 2' . 7 .",
+          "1' . 1' . 7 . 1' . 3' . 1' . 7 . 5 .", "1' . 1' . 7 . 1' . 3' . 5' . 7' . 5' .", "4 . 4 . 6 . 1' . 4' . 1' . 6 . 4 .", "5 . 7 . 2' . 5' . 7' . 5' . 3' . 2' ."] },
+  // Prologue : grave et mystérieux (ré mineur) — longues notes sur cordes
+  prologue: { root: 50, mode: 'minor', bpm: 54, prog: [0, 5, 3, 4, 0, 5, 6, 4], inst: 'flute', pad: 'sawtooth', arp: 0.18, drums: 0, bass: 1,
+    mel: ['5 - - - - - - - 3 - - - 1 - - -', '6 - - - - - - - 5 - - - 3 - - -', '4 - - - - - - - 6 - - - 5 - - -', '5 - - - - - 7 - 5 - - - 3 - - -',
+          "1' - - - - - - - 7 - - - 5 - - -", "6 - - - 7 - - - 1' - - - 3' - - -", "7 - - - 2' - - - 4' - - - 2' - - -", '5 - - - 3 - - - 5 - - - - - - -'] },
+  // Fin : chaleureux, plein d'espoir (ré majeur)
+  ending: { root: 50, mode: 'major', bpm: 66, prog: [0, 4, 5, 3, 0, 4, 3, 0], inst: 'bell', pad: 'triangle', arp: 0.4, drums: 0, bass: 1,
+    mel: ["3 - - - 5 - - - 1' - - - 5 - 3 -", "5 - - - 7 - - - 2' - - - 7 - 5 -", "6 - - - 1' - - - 3' - - - 1' - 6 -", "4 - - - 6 - - - 1' - - - 6 - 5 -",
+          "3 - - - 5 - - - 1' - 2' - 3' - - -", "2' - - - 7 - - - 5 - - - 7 - 2' -", "1' - - - 6 - - - 4 - - - 6 - 1' -", "1' - - - - - - - 5 - - - 1 - - -"] },
 };
+for (const [n, T] of Object.entries(TRACKS)) T.mel.forEach((b, i) => { if (b.split(' ').length !== 16) throw new Error(`musique ${n} mesure ${i + 1} : ${b.split(' ').length} pas au lieu de 16`); });
+export { TRACKS };
 const mtof = (m) => 440 * Math.pow(2, (m - 69) / 12);
 const KEY = 'lumenfall.audio';
 
 export class Music {
   constructor() {
     this.ctx = null; this.track = null; this.want = null; this.step = 0; this.nextT = 0; this.cfg = null;
-    this.vol = { music: 0.6, sfx: 0.8 };
+    this.vol = { music: 0.6, sfx: 0.8 }; this.lookahead = 0.25;
     try { Object.assign(this.vol, JSON.parse(localStorage.getItem(KEY)) || {}); } catch { /* ignore */ }
     this.lastSfx = {};
   }
@@ -66,9 +95,47 @@ export class Music {
     this.bus.gain.setTargetAtTime(0, t, 0.12);
     clearTimeout(this.swap);
     this.swap = setTimeout(() => {
-      this.cfg = TRACKS[name] || null; this.step = 0; this.nextT = c.currentTime + 0.05;
+      this.cfg = TRACKS[name] || null; this.#parse(); this.step = 0; this.nextT = c.currentTime + 0.05;
       this.bus.gain.setTargetAtTime(this.vol.music * 0.5, c.currentTime, 0.5);
     }, force ? 0 : 450);
+  }
+
+  // Découpe la mélodie en notes {pos, d (degré), oct, len} par mesure
+  #parse() {
+    const C = this.cfg; if (!C) return;
+    C.ev = C.mel.map((bar) => {
+      const out = [], tk = bar.split(' ');
+      tk.forEach((t, i) => {
+        if (t === '.') return;
+        if (t === '-') { const l = out[out.length - 1]; if (l && l.pos + l.len === i) l.len++; return; }
+        const m = /^(\d)(['’]*)(,*)$/.exec(t); if (!m) return;
+        out.push({ pos: i, d: +m[1] - 1, oct: m[2].length - m[3].length, len: 1 });
+      });
+      return out;
+    });
+  }
+
+  // Voix de mélodie : flute (vibrato), bell (cloche), pluck (pincé), lead (synthé tranchant)
+  #voice(inst, freq, t, dur) {
+    const c = this.ctx;
+    if (inst === 'bell') {
+      this.#note(freq, t, dur, { type: 'sine', gain: 0.12, a: 0.005, r: Math.min(1.6, dur + 0.6), echo: true });
+      this.#note(freq * 2.76, t, 0.5, { type: 'sine', gain: 0.03, a: 0.003, r: 0.4 });
+    } else if (inst === 'pluck') {
+      this.#note(freq, t, dur * 0.7, { type: 'triangle', gain: 0.17, a: 0.004, r: 0.25, echo: true, cutoff: 2600 });
+      this.#note(freq * 2, t, 0.12, { type: 'sine', gain: 0.04, a: 0.002, r: 0.1 });
+    } else if (inst === 'lead') {
+      this.#note(freq, t, dur, { type: 'sawtooth', gain: 0.07, a: 0.008, r: 0.12, cutoff: 2400, detune: -7, echo: true });
+      this.#note(freq, t, dur, { type: 'square', gain: 0.035, a: 0.008, r: 0.12, cutoff: 1800, detune: 7 });
+    } else { // flute : sinus + souffle léger, vibrato qui s'installe
+      const o = c.createOscillator(), g = c.createGain(), lfo = c.createOscillator(), lg = c.createGain();
+      o.type = 'sine'; o.frequency.value = freq; lfo.frequency.value = 5.2; lg.gain.setValueAtTime(0, t); lg.gain.linearRampToValueAtTime(10, t + Math.min(0.5, dur));
+      lfo.connect(lg); lg.connect(o.detune);
+      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.15, t + 0.07); g.gain.setTargetAtTime(0, t + Math.max(0.08, dur - 0.25), 0.12);
+      o.connect(g); g.connect(this.bus); g.connect(this.delay); g.connect(this.verb);
+      o.start(t); lfo.start(t); o.stop(t + dur + 0.6); lfo.stop(t + dur + 0.6);
+      this.#note(freq * 2, t, dur, { type: 'triangle', gain: 0.025, a: 0.08, r: 0.3 });
+    }
   }
 
   stop() { this.want = null; this.track = null; if (this.ctx) this.bus.gain.setTargetAtTime(0, this.ctx.currentTime, 0.2); }
@@ -76,7 +143,7 @@ export class Music {
   #tick() {
     const c = this.ctx; if (!c || !this.cfg || c.state !== 'running') return;
     const sixteenth = 60 / this.cfg.bpm / 4;
-    while (this.nextT < c.currentTime + 0.25) { this.#play(this.step, this.nextT, sixteenth); this.step++; this.nextT += sixteenth; }
+    while (this.nextT < c.currentTime + this.lookahead) { this.#play(this.step, this.nextT, sixteenth); this.step++; this.nextT += sixteenth; }
   }
 
   #note(freq, t, dur, { type = 'sine', gain = 0.2, a = 0.01, r = 0.2, to = this.bus, echo = false, verb = true, cutoff = 0, detune = 0 } = {}) {
@@ -126,14 +193,17 @@ export class Music {
       const pat = [0, 1, 2, 1, 2, 3, 2, 1][(pos / 2) % 8], k = pat % 3, oct = pat >= 3 ? 2 : 1;
       this.#note(mtof(chord[k] + 12 * oct), t, s16 * 3, { type: 'triangle', gain: 0.075, a: 0.005, r: 0.35, echo: true, cutoff: 3200 });
     }
-    if ((pos === 0 || pos === 6 || pos === 10) && rnd() < C.lead) { // mélodie éparse (cloche)
-      const d = deg + [0, 1, 2, 4, 5, 7][Math.floor(rnd() * 6)];
-      this.#note(mtof(noteOf(d, 2)), t, s16 * 4, { type: 'sine', gain: 0.09, a: 0.01, r: 0.9, echo: true });
+    for (const e of C.ev?.[bar % C.ev.length] || []) { // mélodie composée
+      if (e.pos !== pos) continue;
+      const m = C.root + 12 + sc[e.d % 7] + 12 * Math.floor(e.d / 7) + 12 * e.oct;
+      this.#voice(C.inst, mtof(m), t, e.len * s16 * (C.inst === 'lead' ? 0.9 : 1));
     }
     if (C.drums >= 1) { // percussions
-      if (C.drums >= 2 ? pos % 4 === 0 : pos === 0 || pos === 8) this.#drum('kick', t, C.drums === 3 ? 1 : 0.7);
+      const kick = C.drums === 1 ? [0, 8] : C.drums === 2 ? [0, 4, 8, 12] : [0, 6, 8, 14];
+      if (kick.includes(pos)) this.#drum('kick', t, C.drums === 3 ? 1 : 0.7);
       if (C.drums >= 2 && (pos === 4 || pos === 12)) this.#drum('snare', t);
-      if (C.drums >= 1 && pos % 2 === 1) this.#drum('hat', t, 0.8);
+      if (C.drums === 3 && pos === 15 && bar % 2 === 1) this.#drum('snare', t, 0.6);
+      if (C.drums >= 3 ? pos % 2 === 0 : pos % 2 === 1) this.#drum('hat', t, C.drums === 3 ? 0.9 : 0.8);
     }
   }
 
