@@ -25,3 +25,12 @@ export const PROLOGUE = [
     "Une lumière traverse le ciel, et vient se poser devant lui.",
   ] },
 ];
+
+// Fin de la partie (après le dialogue du Roi Gélatine) : le premier fragment rejoint la lanterne.
+export const ENDING_TITLE = { kicker: 'LUMENFALL', title: 'Le premier fragment', sub: 'La Flamme t\'appelle' };
+export const ENDING_CINE = [
+  { id: 'eveil', paras: [
+    "Un premier fragment de la Flamme a rejoint la lanterne du Veilleur.",
+    "Six autres brillent encore, quelque part aux confins du monde.",
+  ] },
+];
