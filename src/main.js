@@ -11,6 +11,8 @@ import { Input } from './ui/Input.js';
 import { HUD } from './ui/HUD.js';
 import { Dialogue } from './ui/Dialogue.js';
 import { Cinematic } from './ui/Cinematic.js';
+import { Living } from './systems/Living.js';
+import { ENDING_CINE, ENDING_TITLE } from './story/prologue.js';
 import { Menu } from './ui/Menu.js';
 import { World } from './world/World.js';
 import { CHAPTERS } from './levels/chapters.js';
@@ -51,7 +53,7 @@ async function boot() {
     },
     onPlayerDeath() { setTimeout(() => { game.player.respawn(); hud.say('Renaissance'); }, 1200); },
     onBossStart(b) {
-      hud.say(b.name.toUpperCase(), 2.5);
+      game.living.bossCard(b);
       if (!b.mini) dialogue.start(STORY[game.world.index].bossIntro);
     },
     onBossPhase(n) { hud.say(`PHASE ${n}`, 1.5); },
@@ -59,11 +61,11 @@ async function boot() {
       const idx = game.world.index;
       if (e === game.boss) {
         game.bossDead[idx] = true; game.quests.progress('boss'); game.hitStop = 0.35; camera.shake(0.7, 0.6); camera.punch(0.12);
-        hud.say('BOSS VAINCU', 3); game.save();
+        hud.say('BOSS VAINCU', 3); game.living.victory(e); game.save();
         setTimeout(() => dialogue.start(STORY[idx].outro, () => { game.portals.openExit(e.home.x, e.home.y); hud.say('Un portail s\'ouvre…', 3); }), 2200);
       } else if (e.mini) {
         game.bossDead['m' + idx] = true; game.quests.progress('mini'); camera.shake(0.5, 0.4);
-        hud.say(`${e.name.toUpperCase()} VAINCU`, 3); game.save();
+        hud.say(`${e.name.toUpperCase()} VAINCU`, 3); game.living.victory(e); game.save();
       } else game.quests.progress('kill');
     },
   };
@@ -72,6 +74,7 @@ async function boot() {
   game.world = new World(game);
   game.shards = new Shards(game);
   game.quests = new Quests(game);
+  game.living = new Living(game);
   window.__lumenfall = game;  // accès console (débogage / tests)
 
   game.player = new Player(scene, 0, 0, assets);
@@ -96,7 +99,7 @@ async function boot() {
     const idx = game.world.index, next = idx + 1;
     if (next >= CHAPTERS.length) {
       game.save();
-      dialogue.start(ENDING, () => { hud.title('FIN', "Merci d'avoir joué", 8); setTimeout(() => showStart(), 8500); });
+      dialogue.start(ENDING, () => game.cine.play(() => { hud.title('FIN', "Merci d'avoir joué", 8); setTimeout(() => showStart(), 8500); }, { script: ENDING_CINE, title: ENDING_TITLE }));
       return;
     }
     game.transitioning = true;
@@ -225,6 +228,7 @@ async function boot() {
       }
     }
     game.world.update(dt);
+    game.living.update(dt);
     pickTrack();
     renderer.render(scene, camera.cam);
     if (!frozen) input.endFrame(); // les appuis ne se perdent pas pendant le hit-stop

@@ -190,6 +190,21 @@ const SCENES = {
       for (let i = S.dust.length - 1; i >= 0; i--) { const d = S.dust[i]; d.l += dt; d.y -= dt * H * 0.05; d.x += Math.sin(t + i) * dt * 8; if (d.l > 3) { S.dust.splice(i, 1); continue; } k.glow(d.x, d.y, H * 0.01, d.c, 0.8 * (1 - d.l / 3)); }
     },
   },
+  eveil: {                       // fin : le fragment entre dans la lanterne, six lueurs lointaines répondent
+    init() { return { stars: stars(130), sparks: [] }; },
+    draw(k, S) {
+      const { ctx, W, H, t, st, sT, dt } = k; sky(k, '#070a1c', '#1d1840'); drawStars(k, S.stars);
+      hills(k, 0.8, '#06050d', 0.03, 6); hills(k, 0.88, '#030208', 0.025, 9);
+      FRAG.slice(1).forEach((c, i) => { const u = (i + 0.5) / 6, a = (st >= 1 ? ease(sT / 3) : 0.12) * (0.55 + 0.35 * Math.sin(t * 1.5 + i * 1.7)); k.glow(W * (0.08 + u * 0.84), H * (0.22 + 0.18 * Math.sin(i * 2.4)), H * 0.035, c, a); });
+      const cx = W * 0.5, cy = H * 0.86, lx = cx + H * 0.02, ly = cy - H * 0.3;
+      figure(k, cx, cy, H * 0.26, '#0d0a1a', 0.5, 1);
+      const L = st === 0 ? ease(sT / 5) : 1, lit = clamp((L - 0.85) / 0.15);
+      if (L < 1) { const fx0 = W * 0.82, fy0 = H * 0.08, ex = lerp(fx0, lx, L), ey = lerp(fy0, ly, L) - Math.sin(L * Math.PI) * H * 0.12; for (let q = 0; q < 14; q++) k.glow(lerp(fx0, lx, Math.max(0, L - q * 0.012)), lerp(fy0, ly, Math.max(0, L - q * 0.012)) - Math.sin(Math.max(0, L - q * 0.012) * Math.PI) * H * 0.12, H * (q ? 0.016 : 0.04), '#ffd27a', 1 - q / 14); }
+      k.glow(lx, ly, H * (0.05 + 0.2 * lit) * (1 + 0.06 * Math.sin(t * 8)), '#a56bff', 0.3 + 0.6 * lit); k.glow(lx, ly, H * (0.025 + 0.06 * lit), '#ffd98a', 0.5 + 0.5 * lit);
+      if (lit > 0 && Math.random() < dt * 30 * lit) S.sparks.push({ x: lx, y: ly, a: rnd(0, TAU), v: rnd(30, 120), l: 0, c: Math.random() < 0.5 ? '#ffd27a' : '#c9a0ff' });
+      for (let i = S.sparks.length - 1; i >= 0; i--) { const s = S.sparks[i]; s.l += dt; if (s.l > 2) { S.sparks.splice(i, 1); continue; } k.glow(s.x + Math.cos(s.a) * s.v * s.l * (H / 600), s.y + Math.sin(s.a) * s.v * s.l * (H / 600) - s.l * 12, H * 0.01, s.c, 1 - s.l / 2); }
+    },
+  },
   veilleur: {                    // 6. L'enfant, la lanterne violette, la lumière qui tombe du ciel
     init() { return { stars: stars(120), spirits: Array.from({ length: 6 }, (_, i) => ({ a: rnd(0, TAU), r: rnd(0.05, 0.14), x: 0.2 + i * 0.1, y: rnd(0.4, 0.66), sp: rnd(0.4, 0.9) })), leaves: [] }; },
     draw(k, S) {
@@ -235,14 +250,15 @@ export class Cinematic {
     window.addEventListener('keydown', (e) => { if (!this.active) return; if (['Space', 'Enter', 'ArrowRight'].includes(e.code)) { e.preventDefault(); this.#advance(); } else if (e.code === 'Escape') this.#finish(); });
   }
 
-  // done() est appelé à la fin (ou au « Passer »). opts.scene : numéro de scène de départ (tests).
+  // done() est appelé à la fin (ou au « Passer »). opts.scene : numéro de scène de départ (tests) ; opts.script / opts.title : autre cinématique (title null = sans carte-titre).
   play(done, opts = {}) {
     if (this.active) return;
     this.active = true; this.done = done; this.game.transitioning = true; this.el.style.display = 'block';
     this.#resize(); this.onResize = () => this.#resize(); window.addEventListener('resize', this.onResize);
     requestAnimationFrame(() => this.el.classList.add('on'));
+    this.script = opts.script || PROLOGUE; const ttl = opts.title === undefined ? PROLOGUE_TITLE : opts.title; this.titleData = ttl;
     this.si = (opts.scene ?? 0) - 1; this.pi = -1; this.sT = 0; this.t = 0; this.stT = 0; this.paraT = 0; this.paraDur = 0; this.revealDone = 0; this.fade = 1; this.mode = 'title'; this.titleT = 0; this.S = null;
-    if (opts.scene) { this.mode = 'scene'; this.#nextScene(true); } else this.#showTitle();
+    if (opts.scene || !ttl) { this.mode = 'scene'; this.#nextScene(true); } else this.#showTitle();
     this.last = performance.now(); this.raf = requestAnimationFrame((n) => this.#loop(n));
   }
 
@@ -252,19 +268,19 @@ export class Cinematic {
   }
 
   #showTitle() {
-    const [k, b, e] = this.ttl.children; k.textContent = PROLOGUE_TITLE.kicker; b.textContent = PROLOGUE_TITLE.title.toUpperCase(); e.textContent = PROLOGUE_TITLE.sub;
+    const [k, b, e] = this.ttl.children; k.textContent = this.titleData.kicker; b.textContent = this.titleData.title.toUpperCase(); e.textContent = this.titleData.sub;
     this.txt.innerHTML = ''; this.ttl.classList.add('on'); this.mode = 'title'; this.titleT = 0; this.fade = 1;
   }
 
   #nextScene(first = false) {
     this.si++; this.ttl.classList.remove('on');
-    if (this.si >= PROLOGUE.length) { this.mode = 'end'; this.endT = 0; return; }
-    const sc = PROLOGUE[this.si]; this.S = SCENES[sc.id].init(); this.draw = SCENES[sc.id].draw; this.sT = 0; this.pi = -1; this.mode = 'scene'; if (!first) this.fade = 1;
+    if (this.si >= this.script.length) { this.mode = 'end'; this.endT = 0; return; }
+    const sc = this.script[this.si]; this.S = SCENES[sc.id].init(); this.draw = SCENES[sc.id].draw; this.sT = 0; this.pi = -1; this.mode = 'scene'; if (!first) this.fade = 1;
     this.#nextPara();
   }
 
   #nextPara() {
-    const sc = PROLOGUE[this.si]; this.pi++;
+    const sc = this.script[this.si]; this.pi++;
     if (this.pi >= sc.paras.length) { this.mode = 'out'; this.outT = 0; this.txt.firstChild?.classList.add('out'); return; }
     const text = sc.paras[this.pi], words = text.split(' ');
     this.txt.innerHTML = ''; this.el.classList.remove('fast');
