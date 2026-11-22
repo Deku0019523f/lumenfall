@@ -1,10 +1,12 @@
 import * as THREE from 'three';
+import { CHAPTERS, ZONES } from '../levels/chapters.js';
 
 // « Le monde vivant » : toutes les animations d'ambiance du jeu, regroupées ici (un seul branchement dans main.js).
 //  • Ambiance par chapitre : lucioles (Racines), feuilles portées par le vent (Plaines), braises violettes + brume (Village)
 //  • Lueur : petite lumière compagnon qui suit le héros (apparaît après le prologue)
 //  • PNJ : point d'exclamation doré tant qu'on ne leur a pas parlé ; cristaux de sauvegarde et orbes : halo qui respire
 //  • Cartes : nom du boss (barres de cinéma + zoom), flash de victoire, titre de chapitre animé, pouvoir éveillé
+//  • Transitions : balayage directionnel à l'entrée d'une salle ; carte du monde qui se dévoile salle par salle ; Lueur qui joue autour du héros à l'arrêt
 //  • Détails : cœurs qui battent à 1 PV, éclat de réapparition, menu d'accueil avec braises et lucioles
 const rnd = (a, b) => a + Math.random() * (b - a);
 
@@ -30,6 +32,21 @@ body.lowhp .mask:not(.empty) { animation: cnBeat .85s ease-in-out infinite; }
 @keyframes cnFlash { 0% { opacity: .9; } 100% { opacity: 0; } }
 #cnPower { position: fixed; left: 0; right: 0; top: 30%; text-align: center; z-index: 41; pointer-events: none; font-family: 'EB Garamond', Georgia, serif; color: #fff3c8; text-shadow: 0 0 22px #ffd27a, 0 2px 8px #000; animation: cnBoss 3s ease-out both; }
 #cnPower small { display: block; font-size: clamp(12px, 3vh, 16px); letter-spacing: 8px; opacity: .8; } #cnPower b { font-weight: 500; font-size: clamp(26px, 7vh, 46px); letter-spacing: 6px; }
+#cnWipe { position: fixed; z-index: 31; pointer-events: none; background: #000; }
+#cnWipe.W { left: 0; top: 0; height: 100%; width: 200vw; background: linear-gradient(to right, transparent 0, #000 9%); animation: cnWW .75s cubic-bezier(.3,.1,.3,1) both; }
+#cnWipe.E { right: 0; top: 0; height: 100%; width: 200vw; background: linear-gradient(to left, transparent 0, #000 9%); animation: cnWE .75s cubic-bezier(.3,.1,.3,1) both; }
+#cnWipe.N { top: 0; left: 0; width: 100%; height: 200vh; background: linear-gradient(to bottom, transparent 0, #000 9%); animation: cnWN .75s cubic-bezier(.3,.1,.3,1) both; }
+#cnWipe.S { bottom: 0; left: 0; width: 100%; height: 200vh; background: linear-gradient(to top, transparent 0, #000 9%); animation: cnWS .75s cubic-bezier(.3,.1,.3,1) both; }
+@keyframes cnWW { 0% { transform: translateX(-20vw); } 100% { transform: translateX(100vw); } }
+@keyframes cnWE { 0% { transform: translateX(20vw); } 100% { transform: translateX(-100vw); } }
+@keyframes cnWN { 0% { transform: translateY(-20vh); } 100% { transform: translateY(100vh); } }
+@keyframes cnWS { 0% { transform: translateY(20vh); } 100% { transform: translateY(-100vh); } }
+.qlist svg .cnIn { transform-box: fill-box; transform-origin: center; animation: cnMapIn .55s ease-out both; }
+@keyframes cnMapIn { from { opacity: 0; transform: scale(.55); } to { opacity: 1; transform: none; } }
+.qlist svg .cnCur { transform-box: fill-box; transform-origin: center; animation: cnMapCur 1.5s ease-in-out infinite; }
+@keyframes cnMapCur { 50% { transform: scale(1.14); filter: drop-shadow(0 0 6px #ffd24a); } }
+.qlist svg .cnNew { animation: cnMapNew 1.6s ease-out both; }
+@keyframes cnMapNew { 0% { filter: drop-shadow(0 0 0 #fff); opacity: 0; transform: scale(.4); } 40% { filter: drop-shadow(0 0 10px #ffe08a); opacity: 1; transform: scale(1.25); } 100% { filter: none; transform: none; } }
 #cnMenuFx { position: fixed; inset: 0; z-index: 51; pointer-events: none; }
 `;
 
@@ -48,7 +65,9 @@ export class Living {
     // titre de chapitre animé + cœurs qui battent
     const hud = game.hud, orig = hud.title.bind(hud);
     hud.title = (sub, main, t) => { orig(sub, main, t); const el = hud.titleEl; el.classList.remove('cn'); void el.offsetWidth; el.classList.add('cn'); };
-    this.prev = { dead: false, dj: false, wall: false };
+    this.prev = { dead: false, dj: false, wall: false }; this.idleT = 0; this.mapShown = false; this.mapSeen = new Set();
+    const w = game.world, lr = w.loadRoom.bind(w);
+    w.loadRoom = (id, entry, ...rest) => { const r = lr(id, entry, ...rest); if (entry) this.wipe(entry); return r; };
     // menu d'accueil : braises et lucioles (canvas par-dessus)
     this.mcv = document.createElement('canvas'); this.mcv.id = 'cnMenuFx'; this.mcv.style.display = 'none'; document.body.appendChild(this.mcv); this.mctx = this.mcv.getContext('2d');
     this.mp = Array.from({ length: 70 }, () => this.#mpart(true));
@@ -99,7 +118,9 @@ export class Living {
     const show = this.alpha > 0.01;
     L.core.visible = L.halo.visible = show; L.trail.forEach((m) => (m.visible = show));
     if (!show) { L.init = false; return; }
-    const tx = p.x - p.facing * 1.2, ty = p.y + 2.1 + Math.sin(this.t * 2 + L.ph) * 0.25;
+    this.idleT = p.state === 'idle' && p.onGround && !g.dialogue?.active ? this.idleT + dt : 0;
+    const play = Math.min(1, Math.max(0, (this.idleT - 5) / 1.5));   // après 5 s d'immobilité, Lueur joue autour du héros
+    const tx = p.x - p.facing * 1.2 * (1 - play) + Math.cos(this.t * 1.7) * 1.7 * play, ty = p.y + 2.1 + Math.sin(this.t * 2 + L.ph) * 0.25 + Math.sin(this.t * 1.7) * 0.9 * play;
     if (!L.init || Math.hypot(tx - L.x, ty - L.y) > 16) { L.x = tx; L.y = ty; L.init = true; this.hist = []; }
     const k = 1 - Math.pow(0.04, dt); L.x += (tx - L.x) * k; L.y += (ty - L.y) * k;
     this.hist.unshift({ x: L.x, y: L.y }); if (this.hist.length > 40) this.hist.length = 40;
@@ -127,6 +148,34 @@ export class Living {
       h.scale.set(s, s, 1); h.position.set(it.mesh.position.x, it.mesh.position.y, 0.4); h.material.opacity = 0.35 + Math.sin(T * 2.2 + it.x) * 0.12; h.visible = on;
     }
     for (const [it, h] of this.halos) if (!seenI.has(it)) { this.#kill(h); this.halos.delete(it); }
+  }
+
+  // ─── Transitions de salle : balayage depuis le côté d'entrée ───
+  wipe(side) {
+    document.getElementById('cnWipe')?.remove();
+    const el = document.createElement('div'); el.id = 'cnWipe'; el.className = side; document.body.appendChild(el); setTimeout(() => el.remove(), 800);
+  }
+
+  // ─── Carte du monde : les salles apparaissent une à une, la salle actuelle pulse, les nouvelles s'allument ───
+  #mapAnim() {
+    const g = this.g, open = g.menu?.open && g.menu.screen === 'map';
+    if (!open) { this.mapShown = false; return; }
+    if (this.mapShown) return;
+    const svg = document.querySelector('.qlist svg'); if (!svg) return;
+    this.mapShown = true;
+    const zone = ZONES[CHAPTERS[Math.max(0, g.world.index)]?.rooms]; if (!zone) return;
+    const seen = g.visited || new Set(), known = new Set(seen);
+    for (const id of seen) for (const e of zone[id]?.exits || []) known.add(e.to);
+    const ids = Object.keys(zone).filter((i) => known.has(i)), order = [...seen];
+    const lines = [...svg.querySelectorAll('line')], rects = [...svg.querySelectorAll('rect')];
+    lines.forEach((l, i) => { l.classList.add('cnIn'); l.style.animationDelay = Math.min(1.2, i * 0.03) + 's'; });
+    rects.forEach((r, i) => {
+      const id = ids[i]; if (!id) return;
+      const rank = order.indexOf(id), d = (rank < 0 ? order.length + i : rank) * 0.045;
+      r.classList.add(!this.mapSeen.has(id) && seen.has(id) && this.mapSeen.size ? 'cnNew' : 'cnIn'); r.style.animationDelay = Math.min(1.6, d) + 's';
+      if (id === g.world.roomId) setTimeout(() => { r.style.animationDelay = '0s'; r.classList.remove('cnIn', 'cnNew'); r.classList.add('cnCur'); }, Math.min(1.6, d) * 1000 + 600);
+    });
+    this.mapSeen = new Set(seen);
   }
 
   // ─── Cartes et événements ───
@@ -181,6 +230,7 @@ export class Living {
     this.#companion(dt, inGame || (started && g.dialogue?.active));
     this.#objects(dt, started);
     if (started && g.player) this.#events();
+    this.#mapAnim();
     this.#menuFx(dt, !!g.menu?.open && g.menu.screen === 'start' && !g.cine?.active);
   }
 }
