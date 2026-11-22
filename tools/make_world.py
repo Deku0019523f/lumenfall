@@ -18,7 +18,7 @@ class R:
         for y in range(H):
             s.g[y][0] = s.g[y][W - 1] = '#'
         for x in range(W): s.g[0][x] = s.g[1][x] = s.g[H - 1][x] = '#'
-        s.zone = CUR['zone']; s.exits = []; s.rnd = random.Random(sum(map(ord, s.zone + rid)))
+        s.zone = CUR['zone']; s.exits = []; s.gated = []; s.rnd = random.Random(sum(map(ord, s.zone + rid)))
     def fill(s, x0, x1, y0, y1, c='#'):
         for x in range(x0, x1 + 1):
             for y in range(y0, y1 + 1): s.g[y][x] = c
@@ -76,6 +76,8 @@ class R:
                 for x in range(e['x0'], e['x1'] + 1): s.g[s.H - 1][x] = '.'
             else:
                 for x in range(e['x0'], e['x1'] + 1): s.g[1][x] = s.g[0][x] = '.'
+    def shelf(s, x0, x1, py, cx):                                    # étagère visible mais hors de portée d'un simple saut : coffre atteignable seulement avec le double saut
+        s.plat(x0, x1, py); s.put(cx, py + 1, 'C'); s.gated.append((cx, py + 1))
     def wall(s, x0, x1, y0, y1): s.fill(x0, x1, y0, y1, 'X')          # mur fissuré : se brise d'un coup de lame
     def pocket(s, xl, xr, cx):                                       # alcôve close (mur fissuré à gauche) contenant un coffre en cx
         s.fill(xl + 1, xr - 1, 2, 3, '.'); s.fill(xl, xr, 4, 4, '#'); s.fill(xr, xr, 2, 4, '#'); s.fill(xl, xl, 2, 3, 'X'); s.put(cx, 2, 'C')
@@ -100,6 +102,8 @@ C.exit('W', 2, 5, 'clairiere'); C.exit('E', 2, 5, 'souche'); C.exit('S', 28, 29,
 Hh = room('souche', 'La Souche Creuse', 50, 3, 0)
 Hh.pit(10, 13); Hh.climb(14, 24, 2, 20, 17, 19); Hh.foes([30, 44, 8], 'cch'); Hh.deco()
 Hh.exit('W', 2, 5, 'gouffre'); Hh.exit('E', 2, 5, 'chambre'); Hh.exit('N', 17, 19, 'cime'); Hh.exit('S', 36, 38, 'prof4', opens='puits')
+# étagères à double saut (coffres visibles dès le début, atteints après l'orbe de la Chambre aux Racines)
+A.shelf(2, 6, 5, 4); B.shelf(12, 17, 5, 14); Hh.shelf(40, 44, 5, 42)
 Z = room('chambre', 'La Chambre aux Racines', 38, 4, 0)
 Z.pit(10, 13); Z.plat(16, 19, 3); Z.plat(22, 26, 5); Z.plat(28, 32, 7); Z.put(30, 8, 'C'); Z.put(24, 6, 'D'); Z.foes([8, 18, 34], 'cc'); Z.deco()
 Z.exit('W', 2, 5, 'souche')
@@ -260,7 +264,7 @@ finish()
 def free(r, x, y): return 0 <= x < r.W and 0 <= y < r.H and r.g[y][x] != '#'
 def support(r, x, y): return y >= 1 and r.g[y - 1][x] in '#=' if 0 <= x < r.W else False
 def body(r, x, y): return free(r, x, y) and free(r, x, y + 1)
-def explore(r, starts):
+def explore(r, starts, up=2):
     """cases où l'on peut se tenir (x,y) accessibles depuis starts ; retourne aussi les sorties N/S franchissables."""
     seen, st = set(), list(starts)
     exits_used = set()
@@ -279,9 +283,9 @@ def explore(r, starts):
             nx = x + dx
             if 0 <= nx < r.W and body(r, nx, y): st.append(fall(nx, y))
         top = 0
-        while top < 3 and free(r, x, y + 1 + top) and r.g[y + 1 + top][x] != '#': top += 1
+        while top < up + 1 and free(r, x, y + 1 + top) and r.g[y + 1 + top][x] != '#': top += 1
         for dx in range(-5, 6):
-            for dy in range(-12, 3):
+            for dy in range(-12, up + 1):
                 nx, ny = x + dx, y + dy
                 if 0 <= nx < r.W and 0 <= ny < r.H and support(r, nx, ny) and body(r, nx, ny) and (dy <= 0 or top >= dy):
                     if all(free(r, x + int(dx * t / 6), max(y, ny) + 1) for t in range(1, 6)) or dy <= 0: st.append((nx, ny))
@@ -351,7 +355,11 @@ if __name__ == '__main__':
             if rid not in reach: continue
             for y in range(r.H):
                 for x in range(r.W):
-                    if r.g[y][x] in 'CSMBDW' and not any((x + dx, y) in reach[rid] for dx in (-1, 0, 1)) and rid not in NEEDS_DOUBLE_JUMP[zn]: bad.append((rid, r.g[y][x], x, y))
+                    if r.g[y][x] in 'CSMBDW' and not any((x + dx, y) in reach[rid] for dx in (-1, 0, 1)) and rid not in NEEDS_DOUBLE_JUMP[zn] and (x, y) not in r.gated: bad.append((rid, r.g[y][x], x, y))
+            for (x, y) in r.gated:   # étagères : inaccessibles à pied, accessibles avec le double saut
+                seen_dj, _ = explore(r, [q for q in entries[rid]], up=5)
+                if any((x + dx, y) in reach[rid] for dx in (-1, 0, 1)): bad.append((rid, 'étagère trop basse', x, y))
+                elif not any((x + dx, y) in seen_dj for dx in (-1, 0, 1)): bad.append((rid, 'étagère hors de portée du double saut', x, y))
         print(f'[{zn}] {len(rooms)} salles | drapeaux {sorted(flags)} | non atteintes : {missing or "aucune"} | objets inaccessibles : {bad or "aucun"}')
         blocked = exit_report(zn, entries)
         print('   sorties non franchissables à pied :', blocked or 'aucune')
