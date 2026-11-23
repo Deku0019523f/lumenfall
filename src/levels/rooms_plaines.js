@@ -2,7 +2,7 @@
 import { decode } from './rle.js';
 
 export const ROOMS = {
-  'plaines/entree': { name: "Le Point de Départ", gx: 0, gy: 2, exits: [{"side": "E", "y0": 2, "y1": 5, "to": "plaines/sanctuaire"}, {"side": "S", "x0": 22, "x1": 24, "to": "plaines/gouffre"}],
+  'plaines/entree': { name: "Le Point de Départ", gx: 0, gy: 2, area: "Les Plaines", dark: 0.0, exits: [{"side": "E", "y0": 2, "y1": 5, "to": "plaines/sanctuaire"}, {"side": "S", "x0": 22, "x1": 24, "to": "plaines/gouffre"}],
     map: decode([
       '#46',
       '#.44#',
@@ -29,7 +29,7 @@ export const ROOMS = {
       '#22.3#21',
       '#22.3#21',
     ]) },
-  'plaines/gouffre': { name: "Le Gouffre aux Piques", gx: 0, gy: 1, exits: [{"side": "E", "y0": 2, "y1": 5, "to": "plaines/camp"}, {"side": "N", "x0": 51, "x1": 53, "to": "plaines/entree"}],
+  'plaines/gouffre': { name: "Le Gouffre aux Piques", gx: 0, gy: 1, area: "Les Plaines", dark: 0.0, exits: [{"side": "E", "y0": 2, "y1": 5, "to": "plaines/camp"}, {"side": "N", "x0": 51, "x1": 53, "to": "plaines/entree"}],
     map: decode([
       '#51.3#10',
       '#.62#',
@@ -56,7 +56,7 @@ export const ROOMS = {
       '#14^21#5^4#20',
       '#64',
     ]) },
-  'plaines/sanctuaire': { name: "Le Sanctuaire", gx: 1, gy: 2, exits: [{"side": "W", "y0": 2, "y1": 5, "to": "plaines/entree"}, {"side": "E", "y0": 2, "y1": 5, "to": "plaines/centre"}, {"side": "N", "x0": 40, "x1": 42, "to": "plaines/secret"}, {"side": "S", "x0": 14, "x1": 16, "to": "plaines/camp"}],
+  'plaines/sanctuaire': { name: "Le Sanctuaire", gx: 1, gy: 2, area: "Les Plaines", dark: 0.0, exits: [{"side": "W", "y0": 2, "y1": 5, "to": "plaines/entree"}, {"side": "E", "y0": 2, "y1": 5, "to": "plaines/centre"}, {"side": "N", "x0": 40, "x1": 42, "to": "plaines/secret"}, {"side": "S", "x0": 14, "x1": 16, "to": "plaines/camp"}], shelves: [[26, 6]],
     map: decode([
       '#40.3#13',
       '#.54#',
@@ -75,15 +75,15 @@ export const ROOMS = {
       '#.41=5.8#',
       '#.54#',
       '#.35=5.14#',
-      '#.54#',
-      '.42=5.9',
+      '#.25C.28#',
+      '.24=5.13=5.9',
       '.56',
       '.36=5.15',
       '.9pSbq.16bc.7q.17',
       '#14.3#39',
       '#14.3#39',
     ]) },
-  'plaines/camp': { name: "Le Camp Abandonné", gx: 1, gy: 1, exits: [{"side": "N", "x0": 38, "x1": 40, "to": "plaines/sanctuaire"}, {"side": "W", "y0": 2, "y1": 5, "to": "plaines/gouffre"}, {"side": "E", "y0": 2, "y1": 5, "to": "plaines/souterrain"}],
+  'plaines/camp': { name: "Le Camp Abandonné", gx: 1, gy: 1, area: "Les Plaines", dark: 0.0, exits: [{"side": "N", "x0": 38, "x1": 40, "to": "plaines/sanctuaire"}, {"side": "W", "y0": 2, "y1": 5, "to": "plaines/gouffre"}, {"side": "E", "y0": 2, "y1": 5, "to": "plaines/souterrain"}],
     map: decode([
       '#38.3#11',
       '#.50#',
@@ -110,7 +110,7 @@ export const ROOMS = {
       '#52',
       '#52',
     ]) },
-  'plaines/souterrain': { name: "Le Passage Souterrain", gx: 2, gy: 1, exits: [{"side": "W", "y0": 2, "y1": 5, "to": "plaines/camp"}, {"side": "E", "y0": 2, "y1": 5, "to": "plaines/bas"}, {"side": "N", "x0": 40, "x1": 42, "to": "plaines/centre"}],
+  'plaines/souterrain': { name: "Le Passage Souterrain", gx: 2, gy: 1, area: "Le Souterrain", dark: 0.5, exits: [{"side": "W", "y0": 2, "y1": 5, "to": "plaines/camp"}, {"side": "E", "y0": 2, "y1": 5, "to": "plaines/bas"}, {"side": "N", "x0": 40, "x1": 42, "to": "plaines/centre"}],
     map: decode([
       '#40.3#15',
       '#35.13#10',
@@ -133,11 +133,11 @@ export const ROOMS = {
       '.42=5.11',
       '.58',
       '.36=5.17',
-      '.12c.9c.35',
+      '.6S.5c.9c.35',
       '#58',
       '#58',
     ]) },
-  'plaines/centre': { name: "Le Cœur des Plaines", gx: 2, gy: 2, exits: [{"side": "W", "y0": 2, "y1": 5, "to": "plaines/sanctuaire"}, {"side": "E", "y0": 2, "y1": 5, "to": "plaines/cascade"}, {"side": "N", "x0": 38, "x1": 40, "to": "plaines/pont"}, {"side": "S", "x0": 12, "x1": 14, "to": "plaines/souterrain"}],
+  'plaines/centre': { name: "Le Cœur des Plaines", gx: 2, gy: 2, area: "Les Plaines", dark: 0.0, exits: [{"side": "W", "y0": 2, "y1": 5, "to": "plaines/sanctuaire"}, {"side": "E", "y0": 2, "y1": 5, "to": "plaines/cascade"}, {"side": "N", "x0": 38, "x1": 40, "to": "plaines/pont"}, {"side": "S", "x0": 12, "x1": 14, "to": "plaines/souterrain"}],
     map: decode([
       '#38.3#19',
       '#.58#',
@@ -159,12 +159,12 @@ export const ROOMS = {
       '#.58#',
       '.40=5.5f.9',
       '.60',
-      '.34=5.21',
-      '.5q.b.8p.5S.5c.2b2.b.8p.16',
+      '.34=5.7#2.12',
+      '.5q.b.6^3.5S.5c.2b2.b.8p.2#2.12',
       '#12.3#45',
       '#12.3#45',
     ]) },
-  'plaines/secret': { name: "Le Passage Secret", gx: 1, gy: 3, exits: [{"side": "S", "x0": 8, "x1": 10, "to": "plaines/sanctuaire"}, {"side": "E", "y0": 2, "y1": 5, "to": "plaines/pont"}],
+  'plaines/secret': { name: "Le Passage Secret", gx: 1, gy: 3, area: "La Tour du Vent", dark: 0.1, exits: [{"side": "S", "x0": 8, "x1": 10, "to": "plaines/sanctuaire"}, {"side": "E", "y0": 2, "y1": 5, "to": "plaines/pont"}],
     map: decode([
       '#44',
       '#44',
@@ -191,7 +191,7 @@ export const ROOMS = {
       '#8.3#33',
       '#8.3#33',
     ]) },
-  'plaines/pont': { name: "Le Pont du Vent", gx: 2, gy: 3, exits: [{"side": "W", "y0": 2, "y1": 5, "to": "plaines/secret"}, {"side": "E", "y0": 2, "y1": 5, "to": "plaines/tour"}, {"side": "S", "x0": 34, "x1": 36, "to": "plaines/centre"}, {"side": "N", "x0": 47, "x1": 49, "to": "plaines/suspendu"}],
+  'plaines/pont': { name: "Le Pont du Vent", gx: 2, gy: 3, area: "La Tour du Vent", dark: 0.1, exits: [{"side": "W", "y0": 2, "y1": 5, "to": "plaines/secret"}, {"side": "E", "y0": 2, "y1": 5, "to": "plaines/tour"}, {"side": "S", "x0": 34, "x1": 36, "to": "plaines/centre"}, {"side": "N", "x0": 47, "x1": 49, "to": "plaines/suspendu"}],
     map: decode([
       '#47.3#12',
       '#.60#',
@@ -218,7 +218,7 @@ export const ROOMS = {
       '#14^17#3.3#25',
       '#34.3#25',
     ]) },
-  'plaines/suspendu': { name: "Le Passage Suspendu", gx: 2, gy: 4, exits: [{"side": "W", "y0": 2, "y1": 5, "to": "plaines/belvedere"}, {"side": "E", "y0": 2, "y1": 5, "to": "plaines/boss"}, {"side": "S", "x0": 46, "x1": 48, "to": "plaines/pont"}],
+  'plaines/suspendu': { name: "Le Passage Suspendu", gx: 2, gy: 4, area: "La Tour du Vent", dark: 0.1, exits: [{"side": "W", "y0": 2, "y1": 5, "to": "plaines/belvedere"}, {"side": "E", "y0": 2, "y1": 5, "to": "plaines/boss"}, {"side": "S", "x0": 46, "x1": 48, "to": "plaines/pont"}],
     map: decode([
       '#64',
       '#.62#',
@@ -245,7 +245,7 @@ export const ROOMS = {
       '#16^17#13.3#15',
       '#46.3#15',
     ]) },
-  'plaines/belvedere': { name: "Le Belvédère", gx: 1, gy: 4, exits: [{"side": "E", "y0": 2, "y1": 5, "to": "plaines/suspendu"}],
+  'plaines/belvedere': { name: "Le Belvédère", gx: 1, gy: 4, area: "La Tour du Vent", dark: 0.1, exits: [{"side": "E", "y0": 2, "y1": 5, "to": "plaines/suspendu"}],
     map: decode([
       '#48',
       '#.46#',
@@ -272,7 +272,7 @@ export const ROOMS = {
       '#48',
       '#48',
     ]) },
-  'plaines/boss': { name: "La Tour du Vent", gx: 3, gy: 4, exits: [{"side": "W", "y0": 2, "y1": 5, "to": "plaines/suspendu"}],
+  'plaines/boss': { name: "La Tour du Vent", gx: 3, gy: 4, area: "La Tour du Vent", dark: 0.1, exits: [{"side": "W", "y0": 2, "y1": 5, "to": "plaines/suspendu"}],
     map: decode([
       '#52',
       '#.50#',
@@ -299,7 +299,7 @@ export const ROOMS = {
       '#52',
       '#52',
     ]) },
-  'plaines/tour': { name: "La Tour en Ruine", gx: 3, gy: 3, exits: [{"side": "W", "y0": 2, "y1": 5, "to": "plaines/pont"}, {"side": "S", "x0": 30, "x1": 32, "to": "plaines/cascade", "opens": "vent"}],
+  'plaines/tour': { name: "La Tour en Ruine", gx: 3, gy: 3, area: "La Tour du Vent", dark: 0.1, exits: [{"side": "W", "y0": 2, "y1": 5, "to": "plaines/pont"}, {"side": "S", "x0": 30, "x1": 32, "to": "plaines/cascade", "opens": "vent"}],
     map: decode([
       '#56',
       '#.54#',
@@ -326,7 +326,7 @@ export const ROOMS = {
       '#30.3#23',
       '#30.3#23',
     ]) },
-  'plaines/cascade': { name: "La Cascade", gx: 3, gy: 2, exits: [{"side": "W", "y0": 2, "y1": 5, "to": "plaines/centre"}, {"side": "E", "y0": 2, "y1": 5, "to": "plaines/caverne"}, {"side": "N", "x0": 20, "x1": 22, "to": "plaines/tour", "gate": "vent"}],
+  'plaines/cascade': { name: "La Cascade", gx: 3, gy: 2, area: "Les Plaines", dark: 0.0, exits: [{"side": "W", "y0": 2, "y1": 5, "to": "plaines/centre"}, {"side": "E", "y0": 2, "y1": 5, "to": "plaines/caverne"}, {"side": "N", "x0": 20, "x1": 22, "to": "plaines/tour", "gate": "vent"}],
     map: decode([
       '#20.3#33',
       '#15.13#28',
@@ -353,7 +353,7 @@ export const ROOMS = {
       '#56',
       '#56',
     ]) },
-  'plaines/caverne': { name: "La Caverne Cachée", gx: 4, gy: 2, exits: [{"side": "W", "y0": 2, "y1": 5, "to": "plaines/cascade"}, {"side": "S", "x0": 38, "x1": 40, "to": "plaines/falaises"}],
+  'plaines/caverne': { name: "La Caverne Cachée", gx: 4, gy: 2, area: "Les Falaises du Vent", dark: 0.15, exits: [{"side": "W", "y0": 2, "y1": 5, "to": "plaines/cascade"}, {"side": "S", "x0": 38, "x1": 40, "to": "plaines/falaises"}],
     map: decode([
       '#50',
       '#.48#',
@@ -380,7 +380,7 @@ export const ROOMS = {
       '#10^4#24.3#9',
       '#38.3#9',
     ]) },
-  'plaines/bas': { name: "Le Souterrain Profond", gx: 3, gy: 1, exits: [{"side": "W", "y0": 2, "y1": 5, "to": "plaines/souterrain"}, {"side": "E", "y0": 2, "y1": 5, "to": "plaines/falaises"}],
+  'plaines/bas': { name: "Le Souterrain Profond", gx: 3, gy: 1, area: "Le Souterrain", dark: 0.5, exits: [{"side": "W", "y0": 2, "y1": 5, "to": "plaines/souterrain"}, {"side": "E", "y0": 2, "y1": 5, "to": "plaines/falaises"}], levers: [[52, 2, "falaises"]],
     map: decode([
       '#58',
       '#16.15#27',
@@ -407,7 +407,7 @@ export const ROOMS = {
       '#16^15#27',
       '#58',
     ]) },
-  'plaines/falaises': { name: "Les Falaises du Vent", gx: 4, gy: 1, exits: [{"side": "W", "y0": 2, "y1": 5, "to": "plaines/bas"}, {"side": "N", "x0": 10, "x1": 12, "to": "plaines/caverne"}],
+  'plaines/falaises': { name: "Les Falaises du Vent", gx: 4, gy: 1, area: "Les Falaises du Vent", dark: 0.15, exits: [{"side": "W", "y0": 2, "y1": 5, "to": "plaines/bas"}, {"side": "N", "x0": 10, "x1": 12, "to": "plaines/caverne", "gate": "falaises"}],
     map: decode([
       '#10.3#31',
       '#.42#',
@@ -430,7 +430,7 @@ export const ROOMS = {
       '.14=5.11f.12#',
       '.43#',
       '.8=5.30#',
-      '.2p.6p2.qb.3b.19qc.4#',
+      '.2p.6p2.qb.3b.6S.13cq.3#',
       '#44',
       '#44',
     ]) },

@@ -2,7 +2,7 @@
 import { decode } from './rle.js';
 
 export const ROOMS = {
-  'village/place': { name: "La Place du Village", gx: 1, gy: 1, exits: [{"side": "W", "y0": 2, "y1": 5, "to": "village/ruelles"}, {"side": "E", "y0": 2, "y1": 5, "to": "village/marche"}, {"side": "N", "x0": 30, "x1": 32, "to": "village/toits"}, {"side": "S", "x0": 46, "x1": 48, "to": "village/egouts"}],
+  'village/place': { name: "La Place du Village", gx: 1, gy: 1, area: "La Place du Village", dark: 0.05, exits: [{"side": "W", "y0": 2, "y1": 5, "to": "village/ruelles"}, {"side": "E", "y0": 2, "y1": 5, "to": "village/marche"}, {"side": "N", "x0": 30, "x1": 32, "to": "village/toits"}, {"side": "S", "x0": 46, "x1": 48, "to": "village/egouts"}],
     map: decode([
       '#30.3#27',
       '#.58#',
@@ -29,7 +29,7 @@ export const ROOMS = {
       '#46.3#11',
       '#46.3#11',
     ]) },
-  'village/ruelles': { name: "Les Ruelles Oubliées", gx: 0, gy: 1, exits: [{"side": "E", "y0": 2, "y1": 5, "to": "village/place"}, {"side": "N", "x0": 40, "x1": 42, "to": "village/maisons"}, {"side": "S", "x0": 24, "x1": 26, "to": "village/cave"}],
+  'village/ruelles': { name: "Les Ruelles Oubliées", gx: 0, gy: 1, area: "La Place du Village", dark: 0.05, exits: [{"side": "E", "y0": 2, "y1": 5, "to": "village/place"}, {"side": "N", "x0": 40, "x1": 42, "to": "village/maisons", "gate": "toit"}, {"side": "S", "x0": 24, "x1": 26, "to": "village/cave"}],
     map: decode([
       '#40.3#13',
       '#.54#',
@@ -56,7 +56,7 @@ export const ROOMS = {
       '#14^5#5.3#29',
       '#24.3#29',
     ]) },
-  'village/marche': { name: "Le Marché Désert", gx: 2, gy: 1, exits: [{"side": "W", "y0": 2, "y1": 5, "to": "village/place"}, {"side": "N", "x0": 12, "x1": 14, "to": "village/clocher", "gate": "cloche"}, {"side": "S", "x0": 42, "x1": 44, "to": "village/crypte"}],
+  'village/marche': { name: "Le Marché Désert", gx: 2, gy: 1, area: "La Place du Village", dark: 0.05, exits: [{"side": "W", "y0": 2, "y1": 5, "to": "village/place"}, {"side": "N", "x0": 12, "x1": 14, "to": "village/clocher", "gate": "cloche"}, {"side": "S", "x0": 42, "x1": 44, "to": "village/crypte"}], shelves: [[39, 6]],
     map: decode([
       '#12.3#43',
       '#.56#',
@@ -75,15 +75,15 @@ export const ROOMS = {
       '#.13=5.38#',
       '#.56#',
       '#.7=5.44#',
-      '#.56#',
-      '.14=5.38#',
+      '#.38C.17#',
+      '.14=5.18=5.15#',
       '.57#',
       '.8=5.44#',
-      '.11q.11pc.20q.11#',
+      '.12q.9S.2p.20q.10#',
       '#30^5#7.3#13',
       '#42.3#13',
     ]) },
-  'village/maisons': { name: "Les Toits des Maisons", gx: 0, gy: 2, exits: [{"side": "S", "x0": 20, "x1": 22, "to": "village/ruelles"}, {"side": "E", "y0": 2, "y1": 5, "to": "village/toits"}, {"side": "N", "x0": 44, "x1": 46, "to": "village/grenier"}],
+  'village/maisons': { name: "Les Toits des Maisons", gx: 0, gy: 2, area: "Les Toits", dark: 0.0, exits: [{"side": "S", "x0": 20, "x1": 22, "to": "village/ruelles"}, {"side": "E", "y0": 2, "y1": 5, "to": "village/toits"}, {"side": "N", "x0": 44, "x1": 46, "to": "village/grenier"}],
     map: decode([
       '#44.3#9',
       '#.54#',
@@ -110,7 +110,7 @@ export const ROOMS = {
       '#20.3#33',
       '#20.3#33',
     ]) },
-  'village/toits': { name: "Les Toits", gx: 1, gy: 2, exits: [{"side": "W", "y0": 2, "y1": 5, "to": "village/maisons"}, {"side": "E", "y0": 2, "y1": 5, "to": "village/clocher"}, {"side": "S", "x0": 6, "x1": 8, "to": "village/place"}, {"side": "N", "x0": 44, "x1": 46, "to": "village/galerie"}],
+  'village/toits': { name: "Les Toits", gx: 1, gy: 2, area: "Les Toits", dark: 0.0, exits: [{"side": "W", "y0": 2, "y1": 5, "to": "village/maisons"}, {"side": "E", "y0": 2, "y1": 5, "to": "village/clocher"}, {"side": "S", "x0": 6, "x1": 8, "to": "village/place"}, {"side": "N", "x0": 44, "x1": 46, "to": "village/galerie"}],
     map: decode([
       '#44.3#13',
       '#.58#',
@@ -133,11 +133,11 @@ export const ROOMS = {
       '.46=5.9',
       '.60',
       '.40=5.15',
-      '.5b.6q.3=3.2=3.2=3.4pk.3p.17p.3',
+      '.6b.6q.2=3.2=3.2=3.5p.S.2p.20',
       '#6.3#5^15#31',
       '#6.3#51',
     ]) },
-  'village/clocher': { name: "Le Clocher", gx: 2, gy: 2, exits: [{"side": "W", "y0": 2, "y1": 5, "to": "village/toits"}, {"side": "S", "x0": 20, "x1": 22, "to": "village/marche", "opens": "cloche"}],
+  'village/clocher': { name: "Le Clocher", gx: 2, gy: 2, area: "Les Toits", dark: 0.0, exits: [{"side": "W", "y0": 2, "y1": 5, "to": "village/toits"}, {"side": "S", "x0": 20, "x1": 22, "to": "village/marche", "opens": "cloche"}],
     map: decode([
       '#48',
       '#.46#',
@@ -164,7 +164,7 @@ export const ROOMS = {
       '#20.3#25',
       '#20.3#25',
     ]) },
-  'village/grenier': { name: "Le Grenier Secret", gx: 0, gy: 3, exits: [{"side": "S", "x0": 8, "x1": 10, "to": "village/maisons"}],
+  'village/grenier': { name: "Le Grenier Secret", gx: 0, gy: 3, area: "Les Toits", dark: 0.0, exits: [{"side": "S", "x0": 8, "x1": 10, "to": "village/maisons"}],
     map: decode([
       '#40',
       '#.38#',
@@ -191,7 +191,7 @@ export const ROOMS = {
       '#8.3#29',
       '#8.3#29',
     ]) },
-  'village/egouts': { name: "Les Égouts", gx: 1, gy: 0, exits: [{"side": "N", "x0": 20, "x1": 22, "to": "village/place"}, {"side": "W", "y0": 2, "y1": 5, "to": "village/cave"}, {"side": "E", "y0": 2, "y1": 5, "to": "village/crypte"}],
+  'village/egouts': { name: "Les Égouts", gx: 1, gy: 0, area: "Les Souterrains", dark: 0.5, exits: [{"side": "N", "x0": 20, "x1": 22, "to": "village/place"}, {"side": "W", "y0": 2, "y1": 5, "to": "village/cave"}, {"side": "E", "y0": 2, "y1": 5, "to": "village/crypte"}],
     map: decode([
       '#20.3#41',
       '#19.7#38',
@@ -218,7 +218,7 @@ export const ROOMS = {
       '#64',
       '#64',
     ]) },
-  'village/cave': { name: "La Cave Oubliée", gx: 0, gy: 0, exits: [{"side": "E", "y0": 2, "y1": 5, "to": "village/egouts"}, {"side": "N", "x0": 22, "x1": 24, "to": "village/ruelles"}],
+  'village/cave': { name: "La Cave Oubliée", gx: 0, gy: 0, area: "Les Souterrains", dark: 0.5, exits: [{"side": "E", "y0": 2, "y1": 5, "to": "village/egouts"}, {"side": "N", "x0": 22, "x1": 24, "to": "village/ruelles"}],
     map: decode([
       '#22.3#25',
       '#19.11#20',
@@ -245,7 +245,7 @@ export const ROOMS = {
       '#50',
       '#50',
     ]) },
-  'village/crypte': { name: "La Crypte du Village", gx: 2, gy: 0, exits: [{"side": "W", "y0": 2, "y1": 5, "to": "village/egouts"}, {"side": "N", "x0": 22, "x1": 24, "to": "village/marche"}],
+  'village/crypte': { name: "La Crypte du Village", gx: 2, gy: 0, area: "Les Souterrains", dark: 0.5, exits: [{"side": "W", "y0": 2, "y1": 5, "to": "village/egouts"}, {"side": "N", "x0": 22, "x1": 24, "to": "village/marche"}], levers: [[50, 2, "toit"]],
     map: decode([
       '#22.3#29',
       '#19.11#24',
@@ -272,7 +272,7 @@ export const ROOMS = {
       '#54',
       '#54',
     ]) },
-  'village/galerie': { name: "La Galerie du Manoir", gx: 1, gy: 3, exits: [{"side": "S", "x0": 38, "x1": 40, "to": "village/toits"}, {"side": "E", "y0": 2, "y1": 5, "to": "village/manoir"}],
+  'village/galerie': { name: "La Galerie du Manoir", gx: 1, gy: 3, area: "Les Toits", dark: 0.0, exits: [{"side": "S", "x0": 38, "x1": 40, "to": "village/toits"}, {"side": "E", "y0": 2, "y1": 5, "to": "village/manoir"}],
     map: decode([
       '#52',
       '#.50#',
@@ -299,7 +299,7 @@ export const ROOMS = {
       '#38.3#11',
       '#38.3#11',
     ]) },
-  'village/manoir': { name: "Le Manoir du Roi Gélatine", gx: 2, gy: 3, exits: [{"side": "W", "y0": 2, "y1": 5, "to": "village/galerie"}],
+  'village/manoir': { name: "Le Manoir du Roi Gélatine", gx: 2, gy: 3, area: "Les Toits", dark: 0.0, exits: [{"side": "W", "y0": 2, "y1": 5, "to": "village/galerie"}],
     map: decode([
       '#52',
       '#.50#',
