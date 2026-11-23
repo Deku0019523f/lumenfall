@@ -12,6 +12,7 @@ import { HUD } from './ui/HUD.js';
 import { Dialogue } from './ui/Dialogue.js';
 import { Cinematic } from './ui/Cinematic.js';
 import { Living } from './systems/Living.js';
+import { Rewards } from './systems/Rewards.js';
 import { ENDING_CINE, ENDING_TITLE } from './story/prologue.js';
 import { Menu } from './ui/Menu.js';
 import { World } from './world/World.js';
@@ -75,6 +76,7 @@ async function boot() {
   game.shards = new Shards(game);
   game.quests = new Quests(game);
   game.living = new Living(game);
+  game.rewards = new Rewards(game);
   window.__lumenfall = game;  // accès console (débogage / tests)
 
   game.player = new Player(scene, 0, 0, assets);
@@ -230,6 +232,7 @@ async function boot() {
     }
     game.world.update(dt);
     game.living.update(dt);
+    game.rewards.update(dt);
     pickTrack();
     renderer.render(scene, camera.cam);
     if (!frozen) input.endFrame(); // les appuis ne se perdent pas pendant le hit-stop
