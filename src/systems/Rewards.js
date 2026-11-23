@@ -8,8 +8,8 @@ const FRAG = 3;                                    // fragments pour une récomp
 const LOOT = {                                     // contenu des coffres : vie | ame | eclats (défaut : étincelles)
   'racines/entree': 'vie', 'racines/clairiere': 'ame', 'racines/souche': 'vie', 'racines/chambre': 'eclats', 'racines/canopee': 'vie',
   'racines/hauteur': 'vie', 'racines/crypte': 'vie', 'racines/raccourci': 'ame', 'racines/galerie': (x) => (x < 70 ? 'vie' : 'ame'),
-  'plaines/belvedere': 'vie', 'plaines/tour': 'vie', 'plaines/caverne': 'vie', 'plaines/secret': 'vie', 'plaines/sanctuaire': 'ame',
-  'village/maisons': 'vie', 'village/grenier': 'vie', 'village/cave': 'vie', 'village/crypte': 'vie', 'village/marche': 'ame',
+  'plaines/belvedere': 'vie', 'plaines/tour': 'vie', 'plaines/caverne': 'vie', 'plaines/secret': 'vie', 'plaines/sanctuaire': 'ame', 'plaines/cascade': 'ame', 'village/egouts': 'vie',
+  'village/maisons': 'vie', 'village/grenier': 'vie', 'village/cave': 'vie', 'village/crypte': 'vie', 'village/marche': (x) => (x < 45 ? 'ame' : 'vie'),
 };
 const SAY = { vie: ['FRAGMENT DE VIE', 'Un masque de plus'], ame: ['FRAGMENT D’ÂME', 'Réserve d’énergie accrue'] };
 
@@ -53,7 +53,10 @@ export class Rewards {
     this.dark = document.createElement('div'); this.dark.id = 'rwDark'; document.body.appendChild(this.dark);
 
     const w = g.world, lr = w.loadRoom.bind(w);
-    w.loadRoom = (id, entry, ...rest) => { this.#clearObjs(); const r = lr(id, entry, ...rest); this.#onRoom(); return r; };
+    w.loadRoom = (id, entry, ...rest) => { this.#clearObjs(); const r = lr(id, entry, ...rest); this.#onRoom();
+      const ow = entry === 'N' && this.#room()?.exits.find((e) => e.oneway && e.side === 'N');   // chute à sens unique : la sortie du plafond est murée
+      if (ow && String(rest[2] || '').split('/').pop() === ow.to.split('/').pop()) setTimeout(() => this.g.hud.say('La chute s’est refermée derrière vous…', 3), 3600);
+      return r; };
     const od = g.onPlayerDeath;
     g.onPlayerDeath = () => { this.#dropShade(); od && od(); };
   }
@@ -91,7 +94,7 @@ export class Rewards {
 
     // portes scellées : visibles tant que le drapeau n'est pas levé ; effet d'ouverture la première fois qu'on les revoit ouvertes
     for (const e of rm.exits) {
-      if (!e.gate) continue;
+      if (!e.gate || e.oneway) continue;
       let cx, cy, sw, sh;
       if (e.side === 'W' || e.side === 'E') { cx = e.side === 'W' ? 0.5 : W - 0.5; cy = (e.y0 + e.y1 + 1) / 2; sw = 1; sh = e.y1 - e.y0 + 1; }
       else { cx = (e.x0 + e.x1 + 1) / 2; cy = e.side === 'N' ? H - 0.5 : 1; sw = e.x1 - e.x0 + 1; sh = e.side === 'N' ? 1 : 2; }

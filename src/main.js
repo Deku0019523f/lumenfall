@@ -196,7 +196,7 @@ async function boot() {
     if (game.cine?.active) { audio.setTrack(game.cine.script?.[0]?.id === 'eveil' ? 'ending' : 'prologue'); return; }
     if (document.body.dataset.started !== '1' || (menu.open && ['start', 'help', 'chapters', 'credits'].includes(menu.screen)) || (menu.screen === 'options' && menu.origin === 'start')) { audio.setTrack('menu'); return; }
     const bo = game.boss?.active && !game.boss.dead, mi = game.miniBoss?.active && !game.miniBoss.dead;
-    audio.setTrack(bo ? 'boss' : mi ? 'mini' : 'ch' + Math.max(0, game.world.index));
+    audio.setTrack(bo ? 'boss' : mi ? 'mini' : (game.world.room?.dark || 0) >= 0.4 ? 'deep' : 'ch' + Math.max(0, game.world.index));
   }
 
   let last = performance.now();
